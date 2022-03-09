@@ -1,0 +1,526 @@
+/*
+MIT License
+
+Copyright (c) 2022 David �kulj
+Copyright (c) 2022 J.Vovk
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+@import url(https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap);
+@font-face {
+    font-family: "Poppins";
+    src: url("/src/sources/Poppins.woff2");
+}
+.dadoPopup-container.dark {
+    --dado-primary: #292d3e;
+    --dado-primary-darken: #1b1e2b;
+    --dado-secondary: #ffa500;
+    --dado-secondary-darken: #cc8400;
+    --dado-close: #f20300;
+    --dado-close-darken: #b20200;
+    --dado-white-text: #fff;
+    --dado-black-text: #000;
+    --dado-success: #00aa00;
+    --dado-success-darken: #006600;
+    --dado-danger: #ff3838;
+    --dado-danger-darken: #ca2020;
+    --dado-info: #0099ff;
+    --dado-info-darken: #0066cc;
+    --dado-warning: #ffa500;
+    --dado-warning-darken: #cc8400;
+}
+
+.dadoPopup-container.light {
+    --dado-primary: #fff;
+    --dado-primary-darken: #ccc;
+    --dado-secondary: #2277cc;
+    --dado-secondary-darken: #1166bb;
+    --dado-close: #f20300;
+    --dado-close-darken: #b20200;
+    --dado-white-text: #000;
+    --dado-black-text: #fff;
+    --dado-success: #006400;
+    --dado-success-darken: #003300;
+    --dado-danger: #ff0000;
+    --dado-danger-darken: #cc0000;
+    --dado-info: #0070bb;
+    --dado-info-darken: #004e9b;
+    --dado-warning: #ffa500;
+    --dado-warning-darken: #cc8400;
+}
+
+.dadoPopup-container *,
+.dadoPopup-container *::before,
+.dadoPopup-container *::after {
+    box-sizing: border-box;
+}
+
+.dadoPopup-container {
+    font-family: Poppins;
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* backdrop-filter: blur(2px); */
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    opacity: 0;
+    pointer-events: none;
+    animation-name: closed;
+    animation-duration: 0.2s;
+    transition: all 0.2s ease;
+    transition-property: opacity;
+    z-index: 1000;
+}
+
+.dadoPopup-container.shown {
+    opacity: 1;
+    animation-name: opened;
+    animation-duration: 0.2s;
+    pointer-events: all;
+}
+
+.dadoPopup {
+    background-color: var(--dado-primary) !important;
+    color: var(--dado-white-text) !important;
+    box-shadow: 5px 5px 5px 2px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    padding: 30px 30px;
+    width: 500px;
+    max-width: 80%;
+    max-height: 100%;
+    text-align: center;
+    transform: scale(1);
+    transition: width 0.2s ease;
+}
+
+.dadoPopup-title {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+.dadoPopup-buttons-container {
+    display: flex;
+    justify-content: center;
+    padding-right: 30px;
+}
+
+.dadoPopup-buttons-container button {
+    margin: 0 5px 0 5px;
+    max-width: 150px !important;
+}
+
+.dadoPopup-header-bar {
+    background-color: var(--dado-primary-darken) !important;
+    position: fixed;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    width: 100%;
+    height: 30px;
+    top: 0;
+    left: 0;
+    border-radius: 5px 5px 5px 0;
+}
+
+.dadoPopup-close-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 30px;
+    font-size: 30px;
+    border-radius: 5px;
+    background-color: var(--dado-close) !important;
+    color: #fff !important;
+    cursor: pointer;
+    user-select: none;
+    pointer-events: all;
+}
+.dadoPopup-close-button:hover {
+    background-color: var(--dado-close-darken) !important;
+}
+
+.dadoPopup-form {
+    background-color: var(--dado-primary) !important;
+    display: grid;
+    position: relative;
+    grid-gap: 5px 0 5px 0;
+    grid-template-columns: 30% 70%;
+    padding-right: 30px;
+    font-family: Poppins;
+    max-height: 60vh;
+    overflow: auto;
+    overflow: overlay;
+}
+
+.dadoPopup-form label {
+    text-align: right;
+    font-weight: bold;
+    width: 100%;
+    padding: 10px 5px 10px 0;
+    border: 0;
+    font-size: 16px;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+/* Inputs styles */
+.dadoPopup-default-input {
+    outline: 0;
+    border: 0;
+    border: 2px solid var(--dado-primary-darken) !important;
+    border-radius: 5px;
+    background-color: var(--dado-primary) !important;
+    color: var(--dado-white-text) !important;
+    border-radius: 5px;
+    width: 100%;
+    min-height: 42px;
+    max-width: 800px !important;
+    height: 42px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.dadoPopup-default-input:focus,
+.dadoPopup-default-input:active {
+    border: 2px solid var(--dado-secondary) !important;
+}
+
+.dadoPopupNumber {
+}
+
+.dadoPopupPassword {
+}
+
+.dadoPopupBoolean {
+}
+
+.dadoPopupCheckbox {
+    min-height: 32px;
+    min-width: 32px;
+}
+.dadoPopupCheckbox:checked,
+.dadoPopupCheckbox:after {
+    accent-color: var(--dado-secondary) !important;
+}
+
+.dadoPopupToggle {
+    appearance: none;
+    display: inline-block;
+    position: relative;
+    width: 62px;
+    min-height: 32px;
+    height: 32px;
+    border-radius: 50px;
+    overflow: hidden;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    background-color: #707070;
+    transition: all ease 0.3s;
+}
+.dadoPopupToggle:before {
+    content: "on off";
+    display: block;
+    position: absolute;
+    z-index: 2;
+    width: 28px;
+    height: 28px;
+    background: #fff !important;
+    left: 2px;
+    top: 2px;
+    border-radius: 50%;
+    font: 10px/28px Helvetica;
+    text-transform: uppercase;
+    font-weight: bold;
+    text-indent: -22px;
+    word-spacing: 37px;
+    color: var(--dado-black-text) !important;
+    text-shadow: -1px -1px rgba(0, 0, 0, 0.15);
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    transition: all cubic-bezier(0.3, 1.5, 0.7, 1) 0.3s;
+}
+.dadoPopupToggle:checked {
+    background-color: var(--dado-secondary) !important;
+}
+.dadoPopupToggle:checked:before {
+    left: 32px;
+}
+
+.dadoPopupDropdown {
+    cursor: pointer;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.dadoPopupTextArea {
+    min-height: 100px;
+    resize: vertical;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.dadoPopupButton {
+    background-color: var(--dado-secondary) !important;
+    color: var(--dado-black-text) !important;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+.dadoPopupButton:focus,
+.dadoPopupButton:active,
+.dadoPopupButton:hover {
+    background-color: var(--dado-secondary-darken) !important;
+}
+
+.dadoPopupColor {
+    width: 100%;
+    padding: 5px;
+}
+
+.dadoPopupHtml {
+}
+
+.dadoPopupText {
+}
+
+.dadoPopupSpacer {
+    display: block;
+    height: 2px;
+    border: 0;
+    padding: 0;
+    max-width: 800px;
+}
+
+.dadoPopupURL {
+}
+.dadoPopupFile {
+    padding: 6px;
+}
+
+.dadoPopupRange {
+    margin: auto;
+    margin-top: 5px;
+    -webkit-appearance: none;
+    position: relative;
+    overflow: hidden;
+    height: 20px !important;
+    width: 100%;
+    cursor: pointer;
+    border-radius: 0;
+    padding: 0;
+}
+.dadoPopupRange::-webkit-slider-runnable-track {
+    background: var(--dado-primary-darken) !important;
+}
+.dadoPopupRange::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px !important;
+    background: #fff;
+    box-shadow: -100vw 0 0 100vw var(--dado-secondary) !important;
+    border: 2px solid #999;
+}
+/* MOZ support */
+.dadoPopupRange::-moz-range-track {
+    height: 20px;
+    background: #ddd;
+}
+.dadoPopupRange::-moz-range-thumb {
+    background: #fff;
+    height: 20px;
+    width: 20px;
+    border: 1px solid #999;
+    border-radius: 0 !important;
+    box-shadow: -100vw 0 0 100vw var(--dado-secondary) !important;
+    box-sizing: border-box;
+}
+.dadoPopupRange::-ms-fill-lower {
+    background: var(--dado-secondary) !important;
+}
+.dadoPopupRange::-ms-thumb {
+    background: #fff;
+    border: 1px solid #999;
+    height: 20px;
+    width: 20px;
+    box-sizing: border-box;
+}
+.dadoPopupRange::-ms-ticks-after {
+    display: none;
+}
+.dadoPopupRange::-ms-ticks-before {
+    display: none;
+}
+.dadoPopupRange::-ms-track {
+    background: var(--dado-primary-darken) !important;
+    color: transparent;
+    height: 20px;
+    border: none;
+}
+
+.dadoPopup-range-container {
+    border: 2px solid var(--dado-primary-darken) !important;
+    border-radius: 5px;
+    padding: 5px 20px;
+}
+.dadoPopup-range-container:active,
+.dadoPopup-range-container:focus {
+    border: 2px solid var(--dado-secondary) !important;
+}
+.dadoPopup-range-value {
+    width: min-content;
+    margin: 0 auto;
+    border: 2px solid var(--dado-secondary) !important;
+    border-radius: 10px;
+    background-color: var(--dado-secondary) !important;
+    color: #fff !important;
+    font-weight: bold;
+    text-align: center;
+    padding: 0 10px;
+}
+
+.dadoPopupDate {
+}
+.dadoPopupTime {
+}
+.dadoPopupDateTime {
+}
+
+.dadoPopupButton.success {
+    background-color: var(--dado-success) !important;
+}
+.dadoPopupButton.success:hover {
+    background-color: var(--dado-success-darken) !important;
+}
+.dadoPopupButton.warning {
+    background-color: var(--dado-warning) !important;
+}
+.dadoPopupButton.warning:hover {
+    background-color: var(--dado-warning-darken) !important;
+}
+.dadoPopupButton.danger {
+    background-color: var(--dado-danger) !important;
+}
+.dadoPopupButton.danger:hover {
+    background-color: var(--dado-danger-darken) !important;
+}
+.dadoPopupButton.info {
+    background-color: var(--dado-info) !important;
+}
+.dadoPopupButton.info:hover {
+    background-color: var(--dado-info-darken) !important;
+}
+
+/* Grid full width classes */
+.no-label {
+    grid-column: 1 / span 0;
+    padding: 0;
+}
+.full-label {
+    grid-column: 1 / span 2;
+}
+
+/* Popup Sizes */
+.small {
+    width: 200px;
+}
+.medium {
+    width: 500px;
+}
+.large {
+    width: 800px;
+}
+.extra-large {
+    width: 1200px;
+}
+.full-screen {
+    max-width: 100%;
+    max-width: 100%;
+    width: 100vw;
+    height: 100vh;
+}
+
+/* Scrollbar */
+.dadoPopup-form::-webkit-scrollbar-track,
+.dadoPopupTextArea::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 2px 2px var(--dado-primary-darken) !important;
+    -webkit-box-shadow: inset 0 0 2px 2px var(--dado-primary-darken) !important;
+    border-radius: 10px;
+    background: var(--dado-primary) !important;
+}
+.dadoPopup-form::-webkit-scrollbar,
+.dadoPopupTextArea::-webkit-scrollbar {
+    width: 12px;
+    background-color: var(--dado-primary) !important;
+    border-radius: 10px;
+}
+.dadoPopup-form::-webkit-scrollbar-thumb,
+.dadoPopupTextArea::-webkit-scrollbar-thumb {
+    background-color: var(--dado-secondary) !important;
+    border-radius: 10px;
+}
+.dadoPopup-form::-webkit-scrollbar-thumb:hover,
+.dadoPopupTextArea::-webkit-scrollbar-thumb:hover {
+    background: var(--dado-secondary-darken) !important;
+}
+
+/* Media screen querys */
+@media (max-width: 550px) {
+    .dadoPopup-form {
+        display: flex;
+        flex-direction: column;
+        overflow-x: hidden;
+    }
+
+    .dadoPopup-form label {
+        text-align: left;
+    }
+}
+
+/* Animations */
+@keyframes opened {
+    0% {
+        transform: scale(0.8);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+@keyframes closed {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(0.8);
+    }
+}
