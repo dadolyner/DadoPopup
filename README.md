@@ -83,7 +83,10 @@ const Example = async () => {
             },
             {
                 type: 'html',
-                value: '<h1>Hello World</h1> <p>Pozdravljen svetek</p>',
+                value: '
+                    <h1>Hello World</h1>
+                    <p>Testing the world</p>
+                ',
             },
             {
                 type: 'password',
