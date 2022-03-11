@@ -64,7 +64,11 @@ SOFTWARE.
  *      confirmButtonText?: String,
  *      preConfirm?: () => void | Promise,
  *      backdrop?: boolean,
- *      backdropConfirm?: boolean,
+ *      backdropConfirm?: boolean | {
+ *          title?: string,
+ *          text?: string,
+ *          confirmButtonText?: string,
+ *      },
  *      allowEnterKey?: true
  * }} DadoPopupOptionsDefault
 */
@@ -431,24 +435,27 @@ class DADOPOPUP_CLASS {
             modalContainer.classList.add('dadoPopup-container')
             modalContainer.classList.add('no-select')
             modalContainer.classList.add(style)
-            if (backdrop || backdropConfirm)
-                modalContainer.onclick = async e => {
-                    // Backdrop click
-                    // @ts-ignore
-                    if (e.target.classList.contains('dadoPopup-container')) {
-                        if (backdropConfirm) {
-                            const result = await this.popup({
-                                title: 'Ali ste prepričani?',
-                                type: 'form',
-                                style,
-                                confirmButtonText: 'Da, zapri',
-                                backdrop: true,
-                            })
-                            if (result.status !== 'confirmed') return
-                        }
-                        on_close()
-                    }
+
+            const close_popup = async () => {
+                if (backdropConfirm) {
+                    const options = typeof backdropConfirm === 'object' ? backdropConfirm : {}
+                    options.title = options.title || 'Are you sure you want to close this popup?'
+                    options.text = options.text || 'All changes will be lost'
+                    options.confirmButtonText = options.confirmButtonText || 'Yes'
+                    const { title, text, confirmButtonText } = options
+                    const result = await this.popup({
+                        type: 'form',
+                        style,
+                        title: `<h2>${title}</h2><p>${text}</p>`,
+                        confirmButtonText,
+                        backdrop: true,
+                    })
+                    if (result.status !== 'confirmed') return
                 }
+                on_close()
+            }
+            if (backdrop || backdropConfirm) // @ts-ignore // On backdrop click
+                modalContainer.onclick = e => { if (e.target.classList.contains('dadoPopup-container')) close_popup() }
 
             modalContainer.innerHTML = [
                 `<div id="${modal_id}" class="dadoPopup">`,
