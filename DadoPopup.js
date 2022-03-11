@@ -107,9 +107,7 @@ class DADOPOPUP_CLASS {
         this.setTranslate = (xPos, yPos, el) => el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)"
         this.addDraggableDado = e => !dado_draggables.includes(e) && dado_draggables.push(e)
         this.removeDraggableDado = e => dado_draggables.includes(e) && dado_draggables.splice(dado_draggables.indexOf(e), 1);
-        (async () => { // Initialize draggable elements
-            const delay = ms => new Promise(resolve2 => setTimeout(resolve2, ms))
-            await delay(100)
+        const load = async () => { // Initialize draggable elements
             const body = document.querySelector("body")
             let activeElement
             let currentX
@@ -155,7 +153,9 @@ class DADOPOPUP_CLASS {
             body.addEventListener("mousedown", dragStart, false)
             body.addEventListener("mouseup", dragEnd, false)
             body.addEventListener("mousemove", drag, false)
-        })();
+            window.removeEventListener("load", load)
+        }
+        window.addEventListener('load', load)
     }
     /** @param { DadoPopupOptionsInfo | DadoPopupOptionsForm } options */
     popup = options => new Promise(async (resolve, reject) => {
