@@ -12,7 +12,7 @@ const Example = async () => {
         confirmButtonText: 'Confirm',
         size: 'large',
         allowEnterKey: true,
-        backdropConfirm: true,
+        closeWarning: true,
         inputs: [
             {
                 type: 'text',
@@ -158,7 +158,6 @@ const SecondPopupexample = async (selected, options) => {
         confirmButtonText: 'Confirm',
         size: 'medium',
         allowEnterKey: true,
-        backdrop: true,
         inputs: [
             {
                 type: 'dropdown',
