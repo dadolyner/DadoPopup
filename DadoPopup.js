@@ -64,7 +64,7 @@ SOFTWARE.
  *      confirmButtonText?: String,
  *      preConfirm?: () => void | Promise,
  *      backdrop?: boolean,
- *      backdropConfirm?: boolean | {
+ *      closeWarning?: boolean | {
  *          title?: string,
  *          text?: string,
  *          confirmButtonText?: string,
@@ -179,7 +179,7 @@ class DADOPOPUP_CLASS {
             ]) || []
             options.buttons = options.buttons && Array.isArray(options.buttons) && options.buttons.length > 0 ? options.buttons : [{ text: options.confirmButtonText, status: 'confirmed' }]
             if (!keys.includes('backdrop')) options.backdrop = true
-            const { buttons, style, preConfirm, allowEnterKey, backdrop, backdropConfirm } = options
+            const { buttons, style, preConfirm, allowEnterKey, backdrop, closeWarning } = options
 
             const modal_id = 'x' + genString(12)
             const close_id = `${modal_id}_close`
@@ -436,9 +436,9 @@ class DADOPOPUP_CLASS {
             modalContainer.classList.add('no-select')
             modalContainer.classList.add(style)
 
-            const close_popup = async () => {
-                if (backdropConfirm) {
-                    const options = typeof backdropConfirm === 'object' ? backdropConfirm : {}
+            const on_close = async () => {
+                if (closeWarning) {
+                    const options = typeof closeWarning === 'object' ? closeWarning : {}
                     options.title = options.title || 'Are you sure you want to close this popup?'
                     options.text = options.text || 'All changes will be lost'
                     options.confirmButtonText = options.confirmButtonText || 'Yes'
@@ -452,10 +452,10 @@ class DADOPOPUP_CLASS {
                     })
                     if (result.status !== 'confirmed') return
                 }
-                on_close()
+                close_modal()
             }
-            if (backdrop || backdropConfirm) // @ts-ignore // On backdrop click
-                modalContainer.onclick = e => { if (e.target.classList.contains('dadoPopup-container')) close_popup() }
+            // @ts-ignore // On backdrop click
+            if (backdrop) modalContainer.onclick = e => { if (e.target.classList.contains('dadoPopup-container')) on_close() }
 
             modalContainer.innerHTML = [
                 `<div id="${modal_id}" class="dadoPopup">`,
@@ -546,7 +546,7 @@ class DADOPOPUP_CLASS {
                 remove_all_references()
             }
             let closing = false
-            const on_close = async () => {
+            const close_modal = async () => {
                 if (closing) return; else closing = true
                 this.removeDraggableDado(draggable)
                 resolve({ status: 'closed' })
