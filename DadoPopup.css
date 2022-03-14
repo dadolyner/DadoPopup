@@ -219,6 +219,9 @@ SOFTWARE.
 }
 
 .dadoPopupCheckbox {
+	width: auto;
+	float: left;
+	margin-left: 25px;
 	min-height: 32px;
 	min-width: 32px;
 }
@@ -229,6 +232,7 @@ SOFTWARE.
 
 .dadoPopupToggle {
 	appearance: none;
+	margin-left: 10px;
 	display: inline-block;
 	position: relative;
 	width: 62px;
