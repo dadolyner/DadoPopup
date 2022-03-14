@@ -26,7 +26,7 @@ SOFTWARE.
 // @ts-check
 "use strict";
 
-/** @typedef {{ value: any, show: () => void, hide: () => void }} DadoPopup_Callback_Data */
+/** @typedef {{ value: any, show: () => void, hide: () => void, success: () => void, error: () => void, reset: () => void }} DadoPopup_Callback_Data */
 
 /** @typedef { ({...DadoPopup_Callback_Data}) => (void | Promise) } DadoPopup_OnChange */
 
@@ -242,11 +242,16 @@ class DADOPOPUP_CLASS {
                             const files_input = document.getElementById(`${modal_id}_${id}`).files
                             if (files_input && files_input.length > 0) value = await this.file_reader(files_input, true) // Just get file info
                         }
-                        values[name] = {
+                        /** @type { DadoPopup_Callback_Data } */
+                        const output = {
                             value, // @ts-ignore
                             hide: () => { element.style.display = 'none'; if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'none' }, // @ts-ignore
-                            show: () => { element.style.display = 'block'; if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'block' }
+                            show: () => { element.style.display = 'block'; if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'block' },
+                            success: () => { element.classList.add('input-success'); element.classList.remove('input-error') },
+                            error: () => { element.classList.add('input-error'); element.classList.remove('input-success') },
+                            reset: () => { element.classList.remove('input-success'); element.classList.remove('input-error') },
                         }
+                        values[name] = output
                     }
                 }
                 return values
