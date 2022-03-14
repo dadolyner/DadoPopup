@@ -125,24 +125,14 @@ class DADOPOPUP_CLASS {
                 if (!activeElement) return
                 xOffset = activeElement.x
                 yOffset = activeElement.y
-                if (e.type === "touchstart") {
-                    initialX = e.touches[0].clientX - xOffset
-                    initialY = e.touches[0].clientY - yOffset
-                } else {
-                    initialX = e.clientX - xOffset
-                    initialY = e.clientY - yOffset
-                }
+                if (e.type === "touchstart") { initialX = e.touches[0].clientX - xOffset; initialY = e.touches[0].clientY - yOffset }
+                else { initialX = e.clientX - xOffset; initialY = e.clientY - yOffset }
             }
             const drag = (e) => {
                 if (activeElement) {
                     e.preventDefault()
-                    if (e.type === "touchmove") {
-                        currentX = e.touches[0].clientX - initialX
-                        currentY = e.touches[0].clientY - initialY
-                    } else {
-                        currentX = e.clientX - initialX
-                        currentY = e.clientY - initialY
-                    }
+                    if (e.type === "touchmove") { currentX = e.touches[0].clientX - initialX; currentY = e.touches[0].clientY - initialY }
+                    else { currentX = e.clientX - initialX; currentY = e.clientY - initialY }
                     xOffset = currentX
                     yOffset = currentY
                     activeElement.x = xOffset
@@ -162,18 +152,15 @@ class DADOPOPUP_CLASS {
         window.addEventListener('load', load)
     }
 
-    file_reader = file => new Promise((resolve, reject) => {
+    file_reader = (files, justChecking = false) => new Promise(async (resolve, reject) => {
         try {
+            if (files.length > 1) return resolve(await Promise.all(files.filter(Boolean).map(file => this.file_reader(file, justChecking))))
+            const file = files.length === 1 ? files[0] : files
+            if (justChecking) return resolve({ name: file.name, type: file.type, size: file.size, lastModified: file.lastModified })
             const reader = new FileReader()
             reader.onerror = reject
             reader.readAsDataURL(file)
-            reader.onload = () => resolve({
-                name: file.name,
-                type: file.type,
-                size: file.size,
-                lastModified: file.lastModified,
-                data: reader.result
-            })
+            reader.onload = () => resolve({ name: file.name, type: file.type, size: file.size, lastModified: file.lastModified, data: reader.result })
         } catch (e) { reject(e) }
     })
 
@@ -215,12 +202,8 @@ class DADOPOPUP_CLASS {
                             if (hasNext) { // @ts-ignore
                                 next.focus()
                                 const type = next.nodeName.toLowerCase()
-                                const targetTypes = ['input', 'textarea']
-                                if (targetTypes.includes(type)) { // @ts-ignore
-                                    const val = next.value // @ts-ignore
-                                    next.value = '' // @ts-ignore
-                                    next.value = val
-                                }
+                                const targetTypes = ['input', 'textarea'] // @ts-ignore
+                                if (targetTypes.includes(type)) { const val = next.value; next.value = ''; next.value = val }
                             } else document.getElementById(`${modal_id}_${buttons[0].id}`).click()
                         }
                         e.preventDefault()
@@ -242,39 +225,27 @@ class DADOPOPUP_CLASS {
                             if (type === 'checkbox' || type === 'toggle' || type === 'boolean') values[name] = document.getElementById(`${modal_id}_${id}`).checked
                             if (type === 'date' && values[name] && values[name].includes('T')) values[name] = values[name].split('T')[0]
                             if (type === 'time' && values[name] && values[name].includes('T')) values[name] = values[name].split('T')[1].split('Z')[0]
-                            if (type === 'file') {
-                                // Read file
-                                // @ts-ignore
+                            if (type === 'file') { // @ts-ignore
                                 const files_input = document.getElementById(`${modal_id}_${id}`).files
-                                if (files_input && files_input.length > 0) {
-                                    if (files_input.length === 1) {
-                                        values[name] = await this.file_reader(files_input[0])
-                                    } else {
-                                        const promises = files_input.map(file => this.file_reader(file))
-                                        const files = await Promise.all(promises)
-                                        values[name] = files
-                                    }
-                                }
+                                if (files_input && files_input.length > 0) values[name] = await this.file_reader(files_input)
                             }
                         }
                     } else {
                         const name = type !== 'spacer' && type !== 'html' && type !== 'button' ? input.name : `spacer_${s++}`
                         const element = document.getElementById(`${modal_id}_${id}`) // @ts-ignore
-                        let value = type !== 'spacer' && type !== 'html' && type !== 'button' ? element.value : ''
+                        let value = type !== 'spacer' && type !== 'html' && type !== 'button' && type !== 'file' ? element.value : ''
                         if (type === 'number') value = value !== '' && Number.isFinite(+value) ? Number(value) : '' //  @ts-ignore
                         if (type === 'checkbox' || type === 'toggle' || type === 'boolean') value = element.checked
                         if (type === 'date' && value && value.includes('T')) value = value.split('T')[0]
                         if (type === 'time' && value && value.includes('T')) value = value.split('T')[1].split('Z')[0]
+                        if (type === 'file') { // @ts-ignore
+                            const files_input = document.getElementById(`${modal_id}_${id}`).files
+                            if (files_input && files_input.length > 0) value = await this.file_reader(files_input, true) // Just get file info
+                        }
                         values[name] = {
-                            value,
-                            hide: () => { // @ts-ignore
-                                element.style.display = 'none' // @ts-ignore
-                                if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'none'
-                            },
-                            show: () => { // @ts-ignore
-                                element.style.display = 'block' // @ts-ignore
-                                if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'block'
-                            }
+                            value, // @ts-ignore
+                            hide: () => { element.style.display = 'none'; if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'none' }, // @ts-ignore
+                            show: () => { element.style.display = 'block'; if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'block' }
                         }
                     }
                 }
