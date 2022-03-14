@@ -161,6 +161,22 @@ class DADOPOPUP_CLASS {
         }
         window.addEventListener('load', load)
     }
+
+    file_reader = file => new Promise((resolve, reject) => {
+        try {
+            const reader = new FileReader()
+            reader.onerror = reject
+            reader.readAsDataURL(file)
+            reader.onload = () => resolve({
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                lastModified: file.lastModified,
+                data: reader.result
+            })
+        } catch (e) { reject(e) }
+    })
+
     /** @param { DadoPopupOptionsInfo | DadoPopupOptionsForm } options */
     popup = options => new Promise(async (resolve, reject) => {
         try {
@@ -171,12 +187,7 @@ class DADOPOPUP_CLASS {
             options.confirmButtonText = options.confirmButtonText || 'OK'
             options.style = options.style || 'light'
             /** @type { DadoPopupInputOption[] } */
-            const inputs = (options.type === 'form' ? options.inputs : [
-                {
-                    type: 'html',
-                    value: options.text
-                }
-            ]) || []
+            const inputs = (options.type === 'form' ? options.inputs : [{ type: 'html', value: options.text }]) || []
             options.buttons = options.buttons && Array.isArray(options.buttons) && options.buttons.length > 0 ? options.buttons : [{ text: options.confirmButtonText, status: 'confirmed' }]
             if (!keys.includes('backdrop')) options.backdrop = true
             const { buttons, style, preConfirm, allowEnterKey, backdrop, closeWarning } = options
@@ -218,6 +229,71 @@ class DADOPOPUP_CLASS {
                 }
             }
 
+            const readValues = async (finalReadout = false) => {
+                const values = {}
+                let s = 1
+                for (const input of inputs) {
+                    const { type, id } = input
+                    if (finalReadout) {
+                        if (type !== 'spacer' && type !== 'html' && type !== 'button') {
+                            const { name, type } = input // @ts-ignore
+                            values[name] = document.getElementById(`${modal_id}_${id}`).value
+                            if (type === 'number') values[name] = values[name] !== '' ? Number(values[name]) : null // @ts-ignore
+                            if (type === 'checkbox' || type === 'toggle' || type === 'boolean') values[name] = document.getElementById(`${modal_id}_${id}`).checked
+                            if (type === 'date' && values[name] && values[name].includes('T')) values[name] = values[name].split('T')[0]
+                            if (type === 'time' && values[name] && values[name].includes('T')) values[name] = values[name].split('T')[1].split('Z')[0]
+                            if (type === 'file') {
+                                // Read file
+                                // @ts-ignore
+                                const files_input = document.getElementById(`${modal_id}_${id}`).files
+                                if (files_input && files_input.length > 0) {
+                                    if (files_input.length === 1) {
+                                        values[name] = await this.file_reader(files_input[0])
+                                    } else {
+                                        const promises = files_input.map(file => this.file_reader(file))
+                                        const files = await Promise.all(promises)
+                                        values[name] = files
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        const name = type !== 'spacer' && type !== 'html' && type !== 'button' ? input.name : `spacer_${s++}`
+                        const element = document.getElementById(`${modal_id}_${id}`) // @ts-ignore
+                        let value = type !== 'spacer' && type !== 'html' && type !== 'button' ? element.value : ''
+                        if (type === 'number') value = value !== '' && Number.isFinite(+value) ? Number(value) : '' //  @ts-ignore
+                        if (type === 'checkbox' || type === 'toggle' || type === 'boolean') value = element.checked
+                        if (type === 'date' && value && value.includes('T')) value = value.split('T')[0]
+                        if (type === 'time' && value && value.includes('T')) value = value.split('T')[1].split('Z')[0]
+                        values[name] = {
+                            value,
+                            hide: () => { // @ts-ignore
+                                element.style.display = 'none' // @ts-ignore
+                                if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'none'
+                            },
+                            show: () => { // @ts-ignore
+                                element.style.display = 'block' // @ts-ignore
+                                if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'block'
+                            }
+                        }
+                    }
+                }
+                return values
+            }
+
+            const writeValues = async values => {
+                inputs.forEach(input => {
+                    const { type } = input
+                    if (type !== 'spacer' && type !== 'html' && type !== 'button' && type !== 'file') {
+                        const { id, name } = input
+                        let value = values[name] ? values[name].value : ''
+                        if (type === 'number') value = value !== '' && Number.isFinite(+value) ? Number(value) : '' //  @ts-ignore
+                        document.getElementById(`${modal_id}_${id}`).value = value //  @ts-ignore
+                        if (type === 'checkbox' || type === 'toggle' || type === 'boolean') document.getElementById(`${modal_id}_${id}`).checked = !!value
+                    }
+                })
+            }
+
             /** @param { String } input_id * @param { ({...any}) => void | Promise } callback * @param { 'cb' | 'click' | 'change' | 'done' | 'rangeChange' } group */
             const addCallback = (input_id, callback, group = 'cb') => {
                 if (!callback) return
@@ -228,44 +304,9 @@ class DADOPOPUP_CLASS {
                     busy = true
                     try {
                         await delay(10)
-                        const values = {}
-                        let s = 1
-                        inputs.forEach(input => {
-                            const { type } = input
-                            if (type !== 'html' && type !== 'button') {
-                                const { id } = input
-                                const name = type !== 'spacer' ? input.name : `spacer_${s++}`
-                                const element = document.getElementById(`${modal_id}_${id}`) // @ts-ignore
-                                let value = type !== 'spacer' ? element.value : ''
-                                if (type === 'number') value = value !== '' && Number.isFinite(+value) ? Number(value) : '' //  @ts-ignore
-                                if (type === 'checkbox' || type === 'toggle' || type === 'boolean') value = element.checked
-                                if (type === 'date' && value && value.includes('T')) value = value.split('T')[0]
-                                if (type === 'time' && value && value.includes('T')) value = value.split('T')[1].split('Z')[0]
-                                values[name] = {
-                                    value,
-                                    hide: () => { // @ts-ignore
-                                        element.style.display = 'none' // @ts-ignore
-                                        if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'none'
-                                    },
-                                    show: () => { // @ts-ignore
-                                        element.style.display = 'block' // @ts-ignore
-                                        if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'block'
-                                    }
-                                }
-                            }
-                        })
+                        const values = await readValues()
                         await callback(values)
-                        inputs.forEach(input => {
-                            const { type } = input
-                            if (type !== 'spacer' && type !== 'html' && type !== 'button') {
-                                const { id, name } = input
-                                let value = values[name] ? values[name].value : ''
-                                if (type === 'number') value = value !== '' && Number.isFinite(+value) ? Number(value) : '' //  @ts-ignore
-                                document.getElementById(`${modal_id}_${id}`).value = value //  @ts-ignore
-                                if (type === 'checkbox' || type === 'toggle' || type === 'boolean') document.getElementById(`${modal_id}_${id}`).checked = !!value
-                                if (type === 'range') document.getElementById(`${modal_id}_${id}_value`).textContent = value
-                            }
-                        })
+                        await writeValues(values)
                     } catch (e) { console.error(e) }
                     busy = false
                 }
@@ -307,42 +348,9 @@ class DADOPOPUP_CLASS {
             const call_preConfirm = async preConfirm => {
                 try {
                     await delay(10)
-                    const values = {}
-                    let s = 1
-                    inputs.forEach(input => {
-                        const { type } = input
-                        const { id } = input
-                        const name = type !== 'spacer' && type !== 'html' && type !== 'button' ? input.name : `spacer_${s++}`
-                        const element = document.getElementById(`${modal_id}_${id}`) // @ts-ignore
-                        let value = type !== 'spacer' && type !== 'html' && type !== 'button' ? element.value : ''
-                        if (type === 'number') value = value !== '' && Number.isFinite(+value) ? Number(value) : '' //  @ts-ignore
-                        if (type === 'checkbox' || type === 'toggle' || type === 'boolean') value = element.checked
-                        if (type === 'date' && value && value.includes('T')) value = value.split('T')[0]
-                        if (type === 'time' && value && value.includes('T')) value = value.split('T')[1].split('Z')[0]
-                        values[name] = {
-                            value,
-                            hide: () => { // @ts-ignore
-                                element.style.display = 'none' // @ts-ignore
-                                if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'none'
-                            },
-                            show: () => { // @ts-ignore
-                                element.style.display = 'block' // @ts-ignore
-                                if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'block'
-                            }
-                        }
-
-                    })
+                    const values = await readValues()
                     await preConfirm(values)
-                    inputs.forEach(input => {
-                        const { type } = input
-                        if (type !== 'spacer' && type !== 'html' && type !== 'button' && type !== 'file') {
-                            const { id, name } = input
-                            let value = values[name] ? values[name].value : ''
-                            if (type === 'number') value = value !== '' && Number.isFinite(+value) ? Number(value) : '' //  @ts-ignore
-                            document.getElementById(`${modal_id}_${id}`).value = value //  @ts-ignore
-                            if (type === 'checkbox' || type === 'toggle' || type === 'boolean') document.getElementById(`${modal_id}_${id}`).checked = !!value
-                        }
-                    })
+                    await writeValues(values)
                 } catch (e) { console.error(e) }
             }
 
@@ -495,52 +503,15 @@ class DADOPOPUP_CLASS {
             if (first_input) first_input.focus()
             const topCloseButton = document.getElementById(close_id)
 
-            const file_reader = file => new Promise((resolve, reject) => {
-                try {
-                    const reader = new FileReader()
-                    reader.onload = () => resolve(reader.result)
-                    reader.onerror = reject
-                    reader.readAsDataURL(file)
-                } catch (e) {
-                    reject(e)
-                }
-            })
             let confirming = false
             const confirm = async (status) => {
                 if (confirming) return; else confirming = true
                 status = status || 'confirmed'
                 this.removeDraggableDado(draggable)
                 await call_preConfirm(preConfirm)
-                const output = {};
-                if (options.type === 'form') {
-                    for (const input of inputs) {
-                        const { type } = input
-                        if (type !== 'spacer' && type !== 'html' && type !== 'button') {
-                            const { id, name, type } = input // @ts-ignore
-                            output[name] = document.getElementById(`${modal_id}_${id}`).value
-                            if (type === 'number') output[name] = output[name] !== '' ? Number(output[name]) : null // @ts-ignore
-                            if (type === 'checkbox' || type === 'toggle' || type === 'boolean') output[name] = document.getElementById(`${modal_id}_${id}`).checked
-                            if (type === 'date' && output[name] && output[name].includes('T')) output[name] = output[name].split('T')[0]
-                            if (type === 'time' && output[name] && output[name].includes('T')) output[name] = output[name].split('T')[1].split('Z')[0]
-                            if (type === 'file') {
-                                // Read file
-                                // @ts-ignore
-                                const files_input = document.getElementById(`${modal_id}_${id}`).files
-                                if (files_input && files_input.length > 0) {
-                                    if (files_input.length === 1) {
-                                        const file = await file_reader(files_input[0])
-                                        output[name] = file
-                                    } else {
-                                        const promises = files_input.map(file => file_reader(file))
-                                        const files = await Promise.all(promises)
-                                        output[name] = files
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                resolve({ status, data: output })
+                const response = { status }
+                if (options.type === 'form') response.data = await readValues(true)
+                resolve(response)
                 modalContainer.classList.remove('shown')
                 await delay(500)
                 remove_all_references()
@@ -572,30 +543,7 @@ class DADOPOPUP_CLASS {
                 const { id, status, verify } = button
                 confirmations[id] = async () => {
                     if (verify) {
-                        const values = {}
-                        let s = 1
-                        inputs.forEach(input => {
-                            const { type } = input
-                            const { id } = input
-                            const name = type !== 'spacer' && type !== 'html' && type !== 'button' ? input.name : `spacer_${s++}`
-                            const element = document.getElementById(`${modal_id}_${id}`) // @ts-ignore
-                            let value = type !== 'spacer' && type !== 'html' && type !== 'button' ? element.value : ''
-                            if (type === 'number') value = value !== '' && Number.isFinite(+value) ? Number(value) : '' //  @ts-ignore
-                            if (type === 'checkbox' || type === 'toggle' || type === 'boolean') value = element.checked
-                            if (type === 'date' && value && value.includes('T')) value = value.split('T')[0]
-                            if (type === 'time' && value && value.includes('T')) value = value.split('T')[1].split('Z')[0]
-                            values[name] = {
-                                value,
-                                hide: () => { // @ts-ignore
-                                    element.style.display = 'none' // @ts-ignore
-                                    if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'none'
-                                },
-                                show: () => { // @ts-ignore
-                                    element.style.display = 'block' // @ts-ignore
-                                    if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'block'
-                                }
-                            }
-                        })
+                        const values = await readValues()
                         const verified = await verify(values)
                         if (verified) confirm(status)
                     } else confirm(status)
