@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2022 David Škulj
+Copyright (c) 2022 David Skulj
 Copyright (c) 2022 Jože Vovk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
