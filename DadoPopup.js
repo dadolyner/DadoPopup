@@ -29,6 +29,7 @@ SOFTWARE.
 /** @typedef {{ value: any, show: () => void, hide: () => void, success: () => void, error: () => void, reset: () => void }} DadoPopup_Callback_Data */
 
 /** @typedef { ({...DadoPopup_Callback_Data}) => (void | Promise) } DadoPopup_OnChange */
+/** @typedef { (input_id: String, group: 'cb' | 'click' | 'change' | 'done' | 'rangeChange', callback: DadoPopup_OnChange) => void } DadoPopup_addCallback */
 
 /** @typedef {{ id?: string; label?: string; hidden?: boolean; onChange?: DadoPopup_OnChange; onFocusOut?: DadoPopup_OnChange; margin?: number; customClass?: string; }} DadoPopupInputCommon */
 
@@ -152,6 +153,10 @@ class DADOPOPUP_CLASS {
         window.addEventListener('load', load)
     }
 
+    delay = ms => new Promise(r => setTimeout(r, ms))
+
+    genString = (len = 10, custom = '') => { const chars = custom || 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; let result = ''; for (let i = 0; i < len; i++) result += chars.charAt(Math.floor(Math.random() * chars.length)); return result }
+
     file_reader = (files, justChecking = false) => new Promise(async (resolve, reject) => {
         try {
             if (files.length > 1) return resolve(await Promise.all(files.filter(Boolean).map(file => this.file_reader(file, justChecking))))
@@ -164,12 +169,60 @@ class DADOPOPUP_CLASS {
         } catch (e) { reject(e) }
     })
 
+    buildKeyboard = keyboard => {
+        if (keyboard === 'numpad') return `data - kioskboard - type="numpad"`
+        if (keyboard === 'text') return `data - kioskboard - type="keyboard"`
+        return ''
+    }
+
+    release_callbacks = (modal_id) => {
+        if (modal_id) {
+            Object.keys(this.___temporaryCallbacks).filter(x => x.startsWith(modal_id)).forEach(key => delete this.___temporaryCallbacks[key])
+            delete this.___popupTriggerNext[modal_id]
+        } else {
+            Object.keys(this.___temporaryCallbacks).forEach(key => delete this.___temporaryCallbacks[key])
+            Object.keys(this.___popupTriggerNext).forEach(key => delete this.___popupTriggerNext[key])
+        }
+    }
+
+    /** @param {DadoPopupInputOption} input * @param {DadoPopup_addCallback} addCallback */
+    compileInput = (input, addCallback) => {
+        input.id = input.id || ('i' + this.genString(12))
+        input.type = input.type || 'text'
+        const { id, type } = input
+        input.customClass = input.customClass || ''
+        if (type === 'text' || type === 'textArea' || type === 'password' || type === 'number' || type === 'color' || type === 'url' || type === 'file') input.placeholder = input.placeholder || ''
+        if (type !== 'spacer' && type !== 'password' && type !== 'file') input.value = input.value === undefined ? '' : input.value
+        if (type === 'dropdown') input.options = (input.options || []).flat(2)
+        if (type === 'text' || type === 'textArea') input.fontFamily = input.fontFamily || 'Arial'
+        if (type === 'color') input.value = input.value || '#FFFFFF'
+        if (type === 'html') input.value = input.value || ''
+        input.hidden = input.hidden || false
+        if (type !== 'spacer') {
+            if (type === 'range') input.onChange = input.onChange || (() => { })
+            if (input.onChange) addCallback(id, 'change', input.onChange)
+            if (input.onFocusOut) addCallback(id, 'done', input.onFocusOut)
+        }
+        if (type === 'button' && input.onClick) addCallback(id, 'click', input.onClick)
+        const margin = +input.margin
+        input.margin = (margin >= 0 || margin < 0) ? margin : 3 // When margin is not set, set default value to 3px
+    }
+
+    /** @param {DadoPopupEndorseButton} button * @param {DadoPopup_addCallback} addCallback */
+    compileButton = (button, addCallback) => {
+        button.id = button.id || ('b' + this.genString(12))
+        button.text = button.text || 'Ok'
+        button.customClass = button.customClass || ''
+        button.textColor = button.textColor ? `color: ${button.textColor} !important;` : ''
+        button.backgroundColor = button.backgroundColor ? `background-color: ${button.backgroundColor} !important;` : ''
+        addCallback(button.id, 'click', button.onClick)
+    }
+
     /** @param { DadoPopupOptionsInfo | DadoPopupOptionsForm } options */
     popup = options => new Promise(async (resolve, reject) => {
         try {
+            const { genString, delay } = this
             const keys = Object.keys(options)
-            const delay = ms => new Promise(resolve2 => setTimeout(resolve2, ms))
-            const genString = (len = 10, custom = '') => { const chars = custom || 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; let result = ''; for (let i = 0; i < len; i++) result += chars.charAt(Math.floor(Math.random() * chars.length)); return result }
             options.preConfirm = options.preConfirm || (() => { })
             options.confirmButtonText = options.confirmButtonText || 'OK'
             options.style = options.style || 'light'
@@ -196,7 +249,7 @@ class DADOPOPUP_CLASS {
                         const element = document.activeElement
                         if (element) {
                             const n = element ? element.nextSibling : null
-                            const next = n ? n.nextSibling : null // @ts-ignore
+                            let next = n ? n.nextSibling : null // @ts-ignore
                             while (next && next.style.display === 'none') next = next.nextSibling.nextSibling
                             const hasNext = !!next
                             if (hasNext) { // @ts-ignore
@@ -266,14 +319,18 @@ class DADOPOPUP_CLASS {
                         if (type === 'number') value = value !== '' && Number.isFinite(+value) ? Number(value) : '' //  @ts-ignore
                         document.getElementById(`${modal_id}_${id}`).value = value //  @ts-ignore
                         if (type === 'checkbox' || type === 'toggle' || type === 'boolean') document.getElementById(`${modal_id}_${id}`).checked = !!value
+                        if (type === 'range') {
+                            const display_value = document.getElementById(`${modal_id}_${id}_value`)
+                            if (display_value) display_value.textContent = value
+                        }
                     }
                 })
             }
 
-            /** @param { String } input_id * @param { ({...any}) => void | Promise } callback * @param { 'cb' | 'click' | 'change' | 'done' | 'rangeChange' } group */
-            const addCallback = (input_id, callback, group = 'cb') => {
-                if (!callback) return
-                const id = modal_id + '_' + input_id + '_' + group
+            /** @type { DadoPopup_addCallback } */
+            const addCallback = (input_id, event = 'cb', callback) => {
+                if (!callback || typeof callback !== 'function') return
+                const id = modal_id + '_' + input_id + '_' + event
                 let busy = false
                 this.___temporaryCallbacks[id] = async () => {
                     if (busy) return
@@ -288,40 +345,9 @@ class DADOPOPUP_CLASS {
                 }
             }
 
-            /** @param {DadoPopupInputOption} input */
-            const compileInput = input => {
-                input.id = input.id || ('i' + genString(12))
-                input.type = input.type || 'text'
-                const { id, type } = input
-                input.customClass = input.customClass || ''
-                if (type === 'text' || type === 'textArea' || type === 'password' || type === 'number' || type === 'color' || type === 'url' || type === 'file') input.placeholder = input.placeholder || ''
-                if (type !== 'spacer' && type !== 'password' && type !== 'file') input.value = input.value === undefined ? '' : input.value
-                if (type === 'dropdown') input.options = (input.options || []).flat(2)
-                if (type === 'text' || type === 'textArea') input.fontFamily = input.fontFamily || 'Arial'
-                if (type === 'color') input.value = input.value || '#FFFFFF'
-                if (type === 'html') input.value = input.value || ''
-                input.hidden = input.hidden || false
-                if (type !== 'spacer') {
-                    if (type === 'range') input.onChange = input.onChange || (() => { })
-                    if (input.onChange) addCallback(id, input.onChange, 'change')
-                    if (input.onFocusOut) addCallback(id, input.onFocusOut, 'done')
-                }
-                if (type === 'button' && input.onClick) addCallback(id, input.onClick, 'click')
-                const margin = +input.margin
-                input.margin = (margin >= 0 || margin < 0) ? margin : 3 // When margin is not set, set default value to 3px
-            }
-
-            /** @param {DadoPopupEndorseButton} button */
-            const compileButton = button => {
-                button.id = button.id || ('b' + genString(12))
-                button.text = button.text || 'Ok'
-                button.customClass = button.customClass || ''
-                button.textColor = button.textColor ? `color: ${button.textColor} !important;` : ''
-                button.backgroundColor = button.backgroundColor ? `background-color: ${button.backgroundColor} !important;` : ''
-                addCallback(button.id, button.onClick, 'click')
-            }
-
+            /** @param { DadoPopup_OnChange } preConfirm */
             const call_preConfirm = async preConfirm => {
+                if (!preConfirm || typeof preConfirm !== 'function') return
                 try {
                     await delay(10)
                     const values = await readValues()
@@ -330,28 +356,17 @@ class DADOPOPUP_CLASS {
                 } catch (e) { console.error(e) }
             }
 
-            const release_callbacks = () => {
-                Object.keys(this.___temporaryCallbacks).filter(x => x.startsWith(modal_id)).forEach(key => delete this.___temporaryCallbacks[key])
-                delete this.___popupTriggerNext[modal_id]
-            }
-
-            const buildKeyboard = keyboard => {
-                if (keyboard === 'numpad') return `data - kioskboard - type="numpad"`
-                if (keyboard === 'text') return `data - kioskboard - type="keyboard"`
-                return ''
-            }
-
             /** @param {DadoPopupInputOption} input * @param {number} index * @returns { String }  */
             const buildInput = (input, index) => {
-                compileInput(input) // @ts-ignore
+                this.compileInput(input, addCallback) // @ts-ignore
                 const { type, id, margin, hidden, customClass } = input
                 const input_id = `${modal_id}_${id}`
                 const value = type !== 'spacer' && type !== 'password' && type !== 'file' ? input.value : ''
                 const placeholder = type === 'text' || type === 'textArea' || type === 'password' || type === 'number' || type === 'color' || type === 'url' || type === 'file' ? input.placeholder : ''
                 const C = (customClass || '').split(' ')
                 const fontFamily = type === 'text' || type === 'textArea' ? `font-family: ${input.fontFamily};` : ''
-                const keyboard = type === 'text' || type === 'date' || type === 'time' || type === 'datetime' || type === 'textArea' || type === 'password' || type === 'number' || type === 'url' ? buildKeyboard(input.keyboard) : ''
-                const kbd = buildKeyboard(keyboard)
+                const keyboard = type === 'text' || type === 'date' || type === 'time' || type === 'datetime' || type === 'textArea' || type === 'password' || type === 'number' || type === 'url' ? this.buildKeyboard(input.keyboard) : ''
+                const kbd = this.buildKeyboard(keyboard)
                 if ((type === 'text' || type === 'number' || type === 'password' || type === 'url' || type === 'textArea') && !C.includes(`js-virtual-keyboard`)) C.push('js-virtual-keyboard')
                 const CLASS = C.join(' ')
                 const color = type === 'spacer' || type === 'button' ? input.color : ''
@@ -367,10 +382,9 @@ class DADOPOPUP_CLASS {
                 if (type === 'button') callbacks.push(input.onClick ? ` onclick="DadoPopupClass.call_callback('${input_id}_click')"` : '')
                 else if (type !== 'spacer') {
                     const change = input.onChange ? `DadoPopupClass.call_callback('${input_id}_change')` : ''
-                    const updateValue = type === 'range' ? `(document.getElementById('${input_id}_value') ? document.getElementById('${input_id}_value').textContent = this.value : true)` : ''
                     const done = input.onFocusOut ? `DadoPopupClass.call_callback('${input_id}_done')` : ''
                     const next = allowEnterKey ? `DadoPopupClass.call_next('${modal_id}')` : ''
-                    const keydown = [change, updateValue, next].filter(Boolean).join(';')
+                    const keydown = [change, next].filter(Boolean).join(';')
                     callbacks.push(` onkeydown="${keydown}"`)
                     callbacks.push(change ? ` onchange="${change}"` : '')
                     callbacks.push(done ? ` onfocusout="${done}"` : '')
@@ -406,7 +420,7 @@ class DADOPOPUP_CLASS {
 
             /** @param {DadoPopupEndorseButton} button * @param {number} index * @returns { String } */
             const buildEndorseButton = (button, index) => {
-                compileButton(button)
+                this.compileButton(button, addCallback)
                 const { id, text, textColor, backgroundColor } = button
                 const input_id = `${modal_id}_${id}`
                 const callbacks = []
@@ -427,13 +441,7 @@ class DADOPOPUP_CLASS {
                     options.text = options.text || 'All changes will be lost'
                     options.confirmButtonText = options.confirmButtonText || 'Yes'
                     const { title, text, confirmButtonText } = options
-                    const result = await this.popup({
-                        type: 'form',
-                        style,
-                        title: `<h2>${title}</h2><p>${text}</p>`,
-                        confirmButtonText,
-                        backdrop: true,
-                    })
+                    const result = await this.popup({ type: 'form', style, title: `<h2>${title}</h2><p>${text}</p>`, confirmButtonText })
                     if (result.status !== 'confirmed') return
                 }
                 close_modal()
@@ -480,8 +488,9 @@ class DADOPOPUP_CLASS {
             const topCloseButton = document.getElementById(close_id)
 
             let confirming = false
-            const confirm = async (status) => {
-                if (confirming) return; else confirming = true
+            const confirm_modal = async (status) => {
+                if (confirming) return
+                confirming = true
                 status = status || 'confirmed'
                 this.removeDraggableDado(draggable)
                 await call_preConfirm(preConfirm)
@@ -521,8 +530,8 @@ class DADOPOPUP_CLASS {
                     if (verify) {
                         const values = await readValues()
                         const verified = await verify(values)
-                        if (verified) confirm(status)
-                    } else confirm(status)
+                        if (verified) confirm_modal(status)
+                    } else confirm_modal(status)
                 }
                 const button_element = document.getElementById(`${modal_id}_${id}`)
                 if (button_element) button_element.addEventListener('click', confirmations[id])
@@ -531,7 +540,7 @@ class DADOPOPUP_CLASS {
             header.addEventListener('dblclick', on_maximize)
 
             const remove_all_references = () => {
-                release_callbacks()
+                this.release_callbacks(modal_id)
                 for (const button of buttons) {
                     const { id } = button
                     const button_element = document.getElementById(`${modal_id}_${id}`)
