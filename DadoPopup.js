@@ -217,7 +217,7 @@ class DADOPOPUP_CLASS {
         addCallback(button.id, 'click', button.onClick)
     }
 
-    /** @param { DadoPopupOptionsInfo | DadoPopupOptionsForm } options */
+    /** @param { DadoPopupOptionsInfo | DadoPopupOptionsForm } options * @returns { Promise<{ status: string, data?: any }> } */
     popup = options => new Promise(async (resolve, reject) => {
         try {
             const { genString, delay } = this
