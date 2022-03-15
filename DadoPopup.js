@@ -60,6 +60,7 @@ SOFTWARE.
  * @typedef {{
  *      title?: string,
  *      style?: 'dark' | 'light',
+ *      labelWidth?: Number,
  *      buttons?: DadoPopupEndorseButton[],
  *      size?: 'small' | 'medium' | 'large' | 'extra-large' | 'full-screen',
  *      confirmButtonText?: String,
@@ -154,9 +155,7 @@ class DADOPOPUP_CLASS {
     }
 
     delay = ms => new Promise(r => setTimeout(r, ms))
-
     genString = (len = 10, custom = '') => { const chars = custom || 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; let result = ''; for (let i = 0; i < len; i++) result += chars.charAt(Math.floor(Math.random() * chars.length)); return result }
-
     file_reader = (files, justChecking = false) => new Promise(async (resolve, reject) => {
         try {
             if (files.length > 1) return resolve(await Promise.all(files.filter(Boolean).map(file => this.file_reader(file, justChecking))))
@@ -230,7 +229,8 @@ class DADOPOPUP_CLASS {
             const inputs = (options.type === 'form' ? options.inputs : [{ type: 'html', value: options.text }]) || []
             options.buttons = options.buttons && Array.isArray(options.buttons) && options.buttons.length > 0 ? options.buttons : [{ text: options.confirmButtonText, status: 'confirmed' }]
             if (!keys.includes('backdrop')) options.backdrop = true
-            const { buttons, style, preConfirm, allowEnterKey, backdrop, closeWarning } = options
+            if (keys.includes('labelWidth')) options.labelWidth = +options.labelWidth > 100 ? 100 : +options.labelWidth < 0 ? 0 : +options.labelWidth
+            const { buttons, style, preConfirm, allowEnterKey, backdrop, closeWarning, labelWidth } = options
 
             const modal_id = 'x' + genString(12)
             const close_id = `${modal_id}_close`
@@ -390,7 +390,8 @@ class DADOPOPUP_CLASS {
                     callbacks.push(done ? ` onfocusout="${done}"` : '')
                 }
                 const callback = callbacks.filter(Boolean).join('')
-                const label = type !== 'spacer' && input.label ? `<label style="margin-top:${margin}px;">${input.label}:</label>` : `<label class="no-label"></label>`
+                const hasLabel = type !== 'spacer' && input.label
+                const label = hasLabel ? `<label style="margin-top:${margin}px;">${input.label}:</label>` : `<label class="no-label"></label>`
                 const buildInputType = () => {
                     switch (type) {
                         case 'spacer': return `<hr class="dadoPopupSpacer" style="margin: ${margin}px 0 ${margin}px 0; border-top: 2px solid ${color ? color : 'transparent'}" />`;
@@ -404,7 +405,7 @@ class DADOPOPUP_CLASS {
                         case 'dropdown-search': return `<input list="dropdownSearchOptions" id="${input_id}" style="margin-top: ${margin}px; ${hidden ? 'display: none;' : ''}" class="dadoPopup-default-input dadoPopupDropdown ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" value="${numbered ? `${selected_index}. ` : ''}${value || ''}" required="true" data-toggle="validator" ${callback} autocomplete="new-password"><datalist id="dropdownSearchOptions">${dropdown_options}</datalist>`
                         case 'textArea': return `<textarea id="${input_id}" class="dadoPopup-default-input dadoPopupTextArea ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" style="font-size: 22px !important; ${fontFamily} margin-top: ${margin}px; ${hidden ? 'display: none;' : ''} width:100%; max-width:100%;" rows="${value ? (value + '').split('\n').length : 1}" placeholder="${placeholder}" ${kbd} ${callback}>${value ? value + '' : ''}</textarea>`
                         case 'button': return `<input type="button" id="${input_id}" style="background: ${color ? color : 'var(--dado-secondary)'} !important; margin-top: ${margin}px; ${hidden ? 'display: none;' : ''}" class="dadoPopup-default-input dadoPopupButton ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" ${callback} value="${value}" autocomplete="new-password"/></input>`
-                        case 'color': return `<input type="color" style="margin-top: ${margin}px;${hidden ? 'display: none;' : ''}" class="dadoPopup-default-input dadoPopupColor ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" id="${input_id}" placeholder="${placeholder}" value="${value || '#FFFFFF'}" required="true" data-toggle="validator" autocomplete="new-password" style="padding: 3px; padding-left: 5px; padding-right: 5px !important;"${callback}>`
+                        case 'color': return `<input type="color" style="margin-top: ${margin}px;${hidden ? 'display: none;' : ''} padding: 3px; padding-left: 5px; padding-right: 5px !important;" class="dadoPopup-default-input dadoPopupColor ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" id="${input_id}" placeholder="${placeholder}" value="${value || '#FFFFFF'}" required="true" data-toggle="validator" autocomplete="new-password" ${callback}>`
                         case 'html': return `<div class="dadoPopupHtml full-label ${CLASS}" id="${input_id}" style="margin-top: ${margin}px;${hidden ? 'display: none;' : ''}">${value}</div>`
                         case 'url': return `<input type="url" class="dadoPopup-default-input dadoPopupURL ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" id="${input_id}" placeholder="${placeholder}" value="${value || ''}" ${kbd} required="true" data-toggle="validator" autocomplete="new-password" style="margin-top: ${margin}px; ${hidden ? 'display: none;' : ''}" ${callback} popup-input />`
                         case 'file': return `<input type="file" id="${input_id}" style="margin-top: ${margin}px; ${hidden ? 'display: none;' : ''}" class="dadoPopup-default-input dadoPopupFile ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" ${callback} ${file_type ? `accept="${file_type}"` : ''}/></input>`
@@ -455,7 +456,7 @@ class DADOPOPUP_CLASS {
                 `       <div id="${close_id}" class="dadoPopup-close-button">&times;</div>`,
                 `   </div>`,
                 `   ${options.title ? `<h1 class="dadoPopup-title no-select">${options.title}</h1>` : ''}`,
-                `   <form class="dadoPopup-form">`,
+                `   <form class="dadoPopup-form" ${labelWidth ? `style="grid-template-columns: ${+labelWidth}% ${100 - labelWidth}% !important;"` : ''}>`,
                 `       ${inputs.map(buildInput).join('')}`,
                 `   </form>`,
                 `   <br class="no-select" />`,
