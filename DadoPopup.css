@@ -28,6 +28,7 @@ SOFTWARE.
 	font-family: 'Poppins';
 	src: url('/src/sources/Poppins.woff2');
 }
+
 .dadoPopup-container.dark {
 	--dado-primary: #292d3e;
 	--dado-primary-darken: #1b1e2b;
@@ -36,7 +37,8 @@ SOFTWARE.
 	--dado-close: #f20300;
 	--dado-close-darken: #b20200;
 	--dado-white-text: #fff;
-	--dado-black-text: #000;
+	--dado-black-text: #595959;
+	--dado-button-text: #000;
 	--dado-success: #00aa00;
 	--dado-success-darken: #006600;
 	--dado-danger: #ff3838;
@@ -50,12 +52,13 @@ SOFTWARE.
 .dadoPopup-container.light {
 	--dado-primary: #fff;
 	--dado-primary-darken: #ccc;
-	--dado-secondary: #2277cc;
+	--dado-secondary: #2274c7;
 	--dado-secondary-darken: #1166bb;
 	--dado-close: #f20300;
 	--dado-close-darken: #b20200;
-	--dado-white-text: #000;
+	--dado-white-text: #595959;
 	--dado-black-text: #fff;
+	--dado-button-text: #fff;
 	--dado-success: #006400;
 	--dado-success-darken: #003300;
 	--dado-danger: #ff0000;
@@ -73,7 +76,7 @@ SOFTWARE.
 }
 
 .dadoPopup-container {
-	font-family: Poppins;
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
 	position: fixed;
 	display: flex;
 	align-items: center;
@@ -117,6 +120,8 @@ SOFTWARE.
 .dadoPopup-title {
 	margin-top: 20px;
 	margin-bottom: 20px;
+	font-size: 32px;
+	font-weight: 100;
 	-moz-user-select: none;
 	user-select: none;
 }
@@ -179,8 +184,10 @@ SOFTWARE.
 .dadoPopup-form label {
 	text-align: right;
 	font-weight: bold;
-	width: 100%;
+	width: fit-content;
 	padding: 10px 5px 10px 0;
+	margin: 0 auto;
+	text-align: center;
 	border: 0;
 	font-size: 16px;
 	-moz-user-select: none;
@@ -202,11 +209,13 @@ SOFTWARE.
 	height: 42px;
 	padding: 10px;
 	font-size: 16px;
+	transition: all 0.3s ease;
 }
 
 .dadoPopup-default-input:focus,
 .dadoPopup-default-input:active {
 	border: 2px solid var(--dado-secondary) !important;
+	box-shadow: 0px 0px 0px 2px var(--dado-secondary) !important;
 }
 
 .dadoPopupNumber {
@@ -290,7 +299,7 @@ SOFTWARE.
 
 .dadoPopupButton {
 	background-color: var(--dado-secondary) !important;
-	color: var(--dado-black-text) !important;
+	color: var(--dado-button-text) !important;
 	cursor: pointer;
 	font-weight: bold;
 	transition: all 0.3s ease;
