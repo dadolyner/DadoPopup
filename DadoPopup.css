@@ -76,12 +76,13 @@ SOFTWARE.
 }
 
 .dadoPopup-container {
-	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
 	position: fixed;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	background-color: rgba(0, 0, 0, 0.5);
+	-webkit-background-color: rgba(0, 0, 0, 0.5);
 	/* backdrop-filter: blur(2px); */
 	top: 0;
 	left: 0;
@@ -105,6 +106,7 @@ SOFTWARE.
 
 .dadoPopup {
 	background-color: var(--dado-primary) !important;
+	-webkit-background-color: var(--dado-primary) !important;
 	color: var(--dado-white-text) !important;
 	box-shadow: 5px 5px 5px 2px rgba(0, 0, 0, 0.2);
 	border-radius: 5px;
@@ -133,12 +135,13 @@ SOFTWARE.
 }
 
 .dadoPopup-buttons-container button {
-	margin: 0 5px 0 5px;
+	margin: 0 5px 0 5px !important;
 	max-width: 150px !important;
 }
 
 .dadoPopup-header-bar {
 	background-color: var(--dado-primary-darken) !important;
+	-webkit-background-color: var(--dado-primary-darken) !important;
 	position: fixed;
 	display: flex;
 	flex-direction: row;
@@ -159,17 +162,23 @@ SOFTWARE.
 	font-size: 30px;
 	border-radius: 5px;
 	background-color: var(--dado-close) !important;
+	-webkit-background-color: var(--dado-close) !important;
 	color: #fff !important;
+	padding: 0;
+	text-align: center;
+	vertical-align: middle;
 	cursor: pointer;
 	user-select: none;
 	pointer-events: all;
 }
 .dadoPopup-close-button:hover {
 	background-color: var(--dado-close-darken) !important;
+	-webkit-background-color: var(--dado-close-darken) !important;
 }
 
 .dadoPopup-form {
 	background-color: var(--dado-primary) !important;
+	-webkit-background-color: var(--dado-primary) !important;
 	display: grid;
 	position: relative;
 	grid-gap: 5px 0 5px 0;
@@ -201,6 +210,7 @@ SOFTWARE.
 	border: 2px solid var(--dado-primary-darken) !important;
 	border-radius: 5px;
 	background-color: var(--dado-primary) !important;
+	-webkit-background-color: var(--dado-primary) !important;
 	color: var(--dado-white-text) !important;
 	border-radius: 5px;
 	width: 100%;
@@ -237,10 +247,11 @@ SOFTWARE.
 .dadoPopupCheckbox:checked,
 .dadoPopupCheckbox:after {
 	accent-color: var(--dado-secondary) !important;
+	-webkit-accent-color: var(--dado-secondary) !important;
 }
 
 .dadoPopupToggle {
-	appearance: none;
+	-webkit-appearance: none;
 	margin-left: 10px;
 	display: inline-block;
 	position: relative;
@@ -253,6 +264,7 @@ SOFTWARE.
 	border: none;
 	cursor: pointer;
 	background-color: #707070;
+	-webkit-background-color: #707070;
 	transition: all ease 0.3s;
 }
 .dadoPopupToggle:before {
@@ -279,6 +291,7 @@ SOFTWARE.
 }
 .dadoPopupToggle:checked {
 	background-color: var(--dado-secondary) !important;
+	-webkit-background-color: var(--dado-secondary) !important;
 }
 .dadoPopupToggle:checked:before {
 	left: 32px;
@@ -299,8 +312,12 @@ SOFTWARE.
 
 .dadoPopupButton {
 	background-color: var(--dado-secondary) !important;
+	-webkit-background-color: var(--dado-secondary) !important;
 	color: var(--dado-button-text) !important;
 	cursor: pointer;
+	padding: 0;
+	text-align: center;
+	vertical-align: middle;
 	font-weight: bold;
 	transition: all 0.3s ease;
 }
@@ -308,6 +325,7 @@ SOFTWARE.
 .dadoPopupButton:active,
 .dadoPopupButton:hover {
 	background-color: var(--dado-secondary-darken) !important;
+	-webkit-background-color: var(--dado-secondary-darken) !important;
 }
 
 .dadoPopupColor {
@@ -410,6 +428,7 @@ SOFTWARE.
 	border: 2px solid var(--dado-secondary) !important;
 	border-radius: 10px;
 	background-color: var(--dado-secondary) !important;
+	-webkit-background-color: var(--dado-secondary) !important;
 	color: #fff !important;
 	font-weight: bold;
 	text-align: center;
@@ -425,27 +444,35 @@ SOFTWARE.
 
 .dadoPopupButton.success {
 	background-color: var(--dado-success) !important;
+	-webkit-background-color: var(--dado-success) !important;
 }
 .dadoPopupButton.success:hover {
 	background-color: var(--dado-success-darken) !important;
+	-webkit-background-color: var(--dado-success-darken) !important;
 }
 .dadoPopupButton.warning {
 	background-color: var(--dado-warning) !important;
+	-webkit-background-color: var(--dado-warning) !important;
 }
 .dadoPopupButton.warning:hover {
 	background-color: var(--dado-warning-darken) !important;
+	-webkit-background-color: var(--dado-warning-darken) !important;
 }
 .dadoPopupButton.danger {
 	background-color: var(--dado-danger) !important;
+	-webkit-background-color: var(--dado-danger) !important;
 }
 .dadoPopupButton.danger:hover {
 	background-color: var(--dado-danger-darken) !important;
+	-webkit-background-color: var(--dado-danger-darken) !important;
 }
 .dadoPopupButton.info {
 	background-color: var(--dado-info) !important;
+	-webkit-background-color: var(--dado-info) !important;
 }
 .dadoPopupButton.info:hover {
 	background-color: var(--dado-info-darken) !important;
+	-webkit-background-color: var(--dado-info-darken) !important;
 }
 .input-success {
 	border: 2px solid var(--dado-success) !important;
