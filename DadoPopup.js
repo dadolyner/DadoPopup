@@ -455,7 +455,7 @@ class DADOPOPUP_CLASS {
                 `   <div class="dadoPopup-header-bar">`,
                 `       <div id="${close_id}" class="dadoPopup-close-button">&times;</div>`,
                 `   </div>`,
-                `   ${options.title ? `<h1 class="dadoPopup-title no-select">${options.title}</h1>` : ''}`,
+                `   ${options.title ? `<div class="dadoPopup-title no-select">${options.title}</div>` : ''}`,
                 `   <form class="dadoPopup-form" ${labelWidth ? `style="grid-template-columns: ${+labelWidth}% ${100 - labelWidth}% !important;"` : ''}>`,
                 `       ${inputs.map(buildInput).join('')}`,
                 `   </form>`,
