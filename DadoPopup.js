@@ -442,7 +442,7 @@ class DADOPOPUP_CLASS {
                     options.text = options.text || 'All changes will be lost'
                     options.confirmButtonText = options.confirmButtonText || 'Yes'
                     const { title, text, confirmButtonText } = options
-                    const result = await this.popup({ type: 'form', style, title: `<h2>${title}</h2><p>${text}</p>`, confirmButtonText })
+                    const result = await this.popup({ type: 'form', style, title: `<span style="font-weight:bold !important">${title}</span><br/>${text}`, confirmButtonText })
                     if (result.status !== 'confirmed') return
                 }
                 close_modal()
