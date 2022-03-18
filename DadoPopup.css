@@ -133,7 +133,6 @@ SOFTWARE.
 .dadoPopup-buttons-container {
 	display: flex;
 	justify-content: center;
-	padding-right: 30px;
 }
 
 .dadoPopup-buttons-container button {
