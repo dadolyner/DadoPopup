@@ -1,11 +1,11 @@
 # Best popup library!
 
 # Popup demo
-    - https://codepen.io/dadolyner/pen/mdpVYGL
+    https://codepen.io/dadolyner/pen/mdpVYGL
 
 # Popup CDN Files
-    - https://cdn.jsdelivr.net/gh/dadolyner/DadoPopup/DadoPopup.css
-    - https://cdn.jsdelivr.net/gh/dadolyner/DadoPopup/DadoPopup.js
+    ttps://cdn.jsdelivr.net/gh/dadolyner/DadoPopup/DadoPopup.css
+    https://cdn.jsdelivr.net/gh/dadolyner/DadoPopup/DadoPopup.js
 
 # Example
 ```js
