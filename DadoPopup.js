@@ -390,13 +390,14 @@ class DADOPOPUP_CLASS {
                     callbacks.push(done ? ` onfocusout="${done}"` : '')
                 }
                 const callback = callbacks.filter(Boolean).join('')
+                const rangeCallback = type === 'range' ? ` oninput="DadoPopupClass.call_callback('${input_id}_change')"` : ''
                 const hasLabel = type !== 'spacer' && input.label
                 const label = hasLabel ? `<label style="margin-top:${margin}px;">${input.label}:</label>` : `<label class="no-label"></label>`
                 const buildInputType = () => {
                     switch (type) {
                         case 'spacer': return `<hr class="dadoPopupSpacer" style="margin: ${margin}px 0 ${margin}px 0; border-top: 2px solid ${color ? color : 'transparent'}" />`;
                         case 'number': return `<input type="number" style="margin-top: ${margin}px;${hidden ? 'display: none;' : ''}" class="dadoPopup-default-input dadoPopupNumber ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" id="${input_id}" placeholder="${placeholder}" value="${value || ''}" ${kbd} required="true" data-toggle="validator" autocomplete="new-password" ${callback} popup-input />`
-                        case 'range': return `<div class="dadoPopup-range-container" style="margin-top: ${margin}px;font-size:16px;"><div id="${input_id}_value" class="dadoPopup-range-value" style="color: var(--dado-black-text) !important;">${value}</div><input type="range" style="${hidden ? 'display: none;' : ''}" class="dadoPopupRange ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" id="${input_id}" value="${value}" ${kbd} min="${min}" max="${max}" step="${step}" required="true" data-toggle="validator" autocomplete="new-password" ${callback} popup-input /></div>`
+                        case 'range': return `<div class="dadoPopup-range-container" style="margin-top: ${margin}px;font-size:16px;" ${rangeCallback}><div id="${input_id}_value" class="dadoPopup-range-value" style="color: var(--dado-black-text) !important;">${value}</div><input type="range" style="${hidden ? 'display: none;' : ''}" class="dadoPopupRange ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" id="${input_id}" value="${value}" ${kbd} min="${min}" max="${max}" step="${step}" required="true" data-toggle="validator" autocomplete="new-password" ${callback} popup-input /></div>`
                         case 'password': return `<input type="password" style="margin-top: ${margin}px;${hidden ? 'display: none;' : ''}" class="dadoPopup-default-input dadoPopupPassword ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" id="${input_id}" placeholder="${placeholder}" value="" ${kbd} required="true" data-toggle="validator" autocomplete="new-password" ${callback} popup-input />`
                         case 'boolean': // Obsolete. Use checkbox
                         case 'checkbox': return `<input type="checkbox" style="margin-top: ${margin}px;${hidden ? 'display: none;' : ''}" class="dadoPopup-default-input dadoPopupCheckbox ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" id="${input_id}" required="true" ${callback} popup-input ${value ? 'checked' : ''}/>`
