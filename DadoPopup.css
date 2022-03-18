@@ -29,6 +29,10 @@ SOFTWARE.
 	src: url('/src/sources/Poppins.woff2');
 }
 
+:root {
+	font-family: Verdana  !important;
+}
+
 .dadoPopup-container.dark {
 	--dado-primary: #292d3e;
 	--dado-primary-darken: #1b1e2b;
@@ -76,7 +80,7 @@ SOFTWARE.
 }
 
 .dadoPopup-container {
-	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+	font-family: Verdana  !important;
 	position: fixed;
 	display: flex;
 	align-items: center;
@@ -92,8 +96,7 @@ SOFTWARE.
 	pointer-events: none;
 	animation-name: closed;
 	animation-duration: 0.2s;
-	transition: all 0.2s ease;
-	transition-property: opacity;
+	transition: opacity 0.3s ease;
 	z-index: 1000;
 }
 
@@ -116,7 +119,6 @@ SOFTWARE.
 	max-height: 100%;
 	text-align: center;
 	transform: scale(1);
-	transition: width 0.2s ease;
 }
 
 .dadoPopup-title {
@@ -154,17 +156,17 @@ SOFTWARE.
 }
 
 .dadoPopup-close-button {
-	display: flex;
-	justify-content: center;
-	align-items: center;
+	display: flex !important;
+	justify-content: center !important;
+	align-items: flex-start !important;
 	width: 30px;
 	height: 30px;
-	font-size: 30px;
+	font-size: 24px;
 	border-radius: 5px;
 	background-color: var(--dado-close) !important;
 	-webkit-background-color: var(--dado-close) !important;
 	color: #fff !important;
-	padding: 0;
+	padding: 0 !important;
 	text-align: center;
 	vertical-align: middle;
 	cursor: pointer;
@@ -174,6 +176,9 @@ SOFTWARE.
 .dadoPopup-close-button:hover {
 	background-color: var(--dado-close-darken) !important;
 	-webkit-background-color: var(--dado-close-darken) !important;
+}
+.dadoPopup-close-button:after {
+	content: '×';
 }
 
 .dadoPopup-form {
@@ -249,6 +254,11 @@ SOFTWARE.
 	accent-color: var(--dado-secondary) !important;
 	-webkit-accent-color: var(--dado-secondary) !important;
 }
+.dadoPopupCheckbox:focus,
+.dadoPopupCheckbox:active {
+	border: 0 !important;
+	box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0) !important;
+}
 
 .dadoPopupToggle {
 	-webkit-appearance: none;
@@ -278,7 +288,7 @@ SOFTWARE.
 	left: 2px;
 	top: 2px;
 	border-radius: 50%;
-	font: 10px/28px Helvetica;
+	font: 10px/28px Verdana ;
 	text-transform: uppercase;
 	font-weight: bold;
 	text-indent: -22px;
