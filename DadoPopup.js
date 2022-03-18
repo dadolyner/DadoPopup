@@ -151,7 +151,7 @@ class DADOPOPUP_CLASS {
             body.addEventListener("mousemove", drag, false)
             window.removeEventListener("load", load)
         }
-        window.addEventListener('load', load)
+        window.addEventListener('load', () => setTimeout(() => load(), 100))
     }
 
     delay = ms => new Promise(r => setTimeout(r, ms))
@@ -454,7 +454,7 @@ class DADOPOPUP_CLASS {
             modalContainer.innerHTML = [
                 `<div id="${modal_id}" class="dadoPopup">`,
                 `   <div class="dadoPopup-header-bar">`,
-                `       <div id="${close_id}" class="dadoPopup-close-button">&times;</div>`,
+                `       <div id="${close_id}" class="dadoPopup-close-button"></div>`,
                 `   </div>`,
                 `   ${options.title ? `<div class="dadoPopup-title no-select">${options.title}</div>` : ''}`,
                 `   <form class="dadoPopup-form" ${labelWidth ? `style="grid-template-columns: ${+labelWidth}% ${100 - labelWidth}% !important;"` : ''}>`,
