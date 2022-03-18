@@ -4,8 +4,8 @@
     https://codepen.io/dadolyner/pen/mdpVYGL
 
 # Popup CDN Files
-    ttps://cdn.jsdelivr.net/gh/dadolyner/DadoPopup/DadoPopup.css
-    https://cdn.jsdelivr.net/gh/dadolyner/DadoPopup/DadoPopup.js
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/dadolyner/DadoPopup/DadoPopup.css" />
+    <script src="https://cdn.jsdelivr.net/gh/dadolyner/DadoPopup/DadoPopup.js"></script>
 
 # Example
 ```js
