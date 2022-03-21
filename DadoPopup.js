@@ -26,20 +26,25 @@ SOFTWARE.
 // @ts-check
 "use strict";
 
-/** @typedef {{ value: any, show: () => void, hide: () => void, success: () => void, error: () => void, reset: () => void }} DadoPopup_Callback_Data */
+/** @typedef { Boolean | Number | String | void } DadoPopup_Callback_DataDirect */
+/** @typedef {{ value: DadoPopup_Callback_DataDirect, show: () => void, hide: () => void, success: () => void, error: () => void, reset: () => void }} DadoPopup_Callback_DataEditable */
 
-/** @typedef { ({...DadoPopup_Callback_Data}) => (void | Promise) } DadoPopup_OnChange */
-/** @typedef { ({...DadoPopup_Callback_Data}) => (Boolean | Promise<Boolean>) } DadoPopup_OnVerify */
-/** @typedef { (input_id: String, group: 'cb' | 'click' | 'change' | 'done' | 'rangeChange', callback: DadoPopup_OnChange) => void } DadoPopup_addCallback */
+/** @typedef { Object.<string, DadoPopup_Callback_DataDirect> } DadoPopup_Callback_DataObjectDirectContainer */
+/** @typedef { Object.<string, DadoPopup_Callback_DataEditable> } DadoPopup_Callback_DataObjectEditableContainer */
 
-/** @typedef {{ id?: string; label?: string; hidden?: boolean; onChange?: DadoPopup_OnChange; onFocusOut?: DadoPopup_OnChange; margin?: number; customClass?: string; }} DadoPopupInputCommon */
+/** @typedef { (values: DadoPopup_Callback_DataObjectDirectContainer) => (void | Promise) } DadoPopup_OnChangeDirect */
+/** @typedef { (values: DadoPopup_Callback_DataObjectEditableContainer) => (void | Promise) } DadoPopup_OnChangeEditable */
+/** @typedef { (values: DadoPopup_Callback_DataObjectEditableContainer) => (Boolean | Promise<Boolean>) } DadoPopup_OnVerify */
+/** @typedef { (input_id: String, group: 'cb' | 'click' | 'change' | 'done' | 'rangeChange', callback: DadoPopup_OnChangeEditable) => void } DadoPopup_addCallback */
+
+/** @typedef {{ id?: string; label?: string; hidden?: boolean; onChange?: DadoPopup_OnChangeEditable; onFocusOut?: DadoPopup_OnChangeEditable; margin?: number; customClass?: string; }} DadoPopupInputCommon */
 
 /** @typedef {{ id?: string; type: 'spacer'; margin?: number; color?: string, customClass?: string; hidden?: boolean; }} DadoPopupInputSpacer */
 /** @typedef { DadoPopupInputCommon & { type: 'text'; name: string; fontFamily?: string; placeholder?: string; value?: string; keyboard?: 'text' | 'numpad'; }} DadoPopupInputOptionText */
 /** @typedef { DadoPopupInputCommon & { type: 'date'; name: string; value?: string; keyboard?: 'text'; }} DadoPopupInputOptionDate */
 /** @typedef { DadoPopupInputCommon & { type: 'time'; name: string; value?: string; keyboard?: 'text'; }} DadoPopupInputOptionTime */
 /** @typedef { DadoPopupInputCommon & { type: 'datetime'; name: string; value?: string; keyboard?: 'text'; }} DadoPopupInputOptionDateTime */
-/** @typedef { DadoPopupInputCommon & { type: 'button'; value?: String; color?: string; onClick: DadoPopup_OnChange }} DadoPopupInputOptionButton */
+/** @typedef { DadoPopupInputCommon & { type: 'button'; value?: String; color?: string; onClick: DadoPopup_OnChangeEditable }} DadoPopupInputOptionButton */
 /** @typedef { DadoPopupInputCommon & { type: 'textArea'; name: string; fontFamily?: string; placeholder?: string; value?: string; keyboard?: 'text' | 'numpad'; }} DadoPopupInputOptionTextArea */
 /** @typedef { DadoPopupInputCommon & { type: 'password'; name: string; placeholder?: string; keyboard?: 'text' | 'numpad'; }} DadoPopupInputOptionPassword*/
 /** @typedef { DadoPopupInputCommon & { type: 'number'; name: string; placeholder?: string; value?: number; keyboard?: 'numpad'; }} DadoPopupInputOptionNumber */
@@ -56,7 +61,7 @@ SOFTWARE.
 /** @typedef { DadoPopupInputCommon & { type: 'html'; value?: string; }} DadoPopupInputOptionHTML */
 
 /** @typedef { DadoPopupInputSpacer | DadoPopupInputOptionText | DadoPopupInputOptionTextArea | DadoPopupInputOptionPassword | DadoPopupInputOptionNumber | DadoPopupInputOptionRange | DadoPopupInputOptionDate | DadoPopupInputOptionTime | DadoPopupInputOptionDateTime | DadoPopupInputOptionBoolean | DadoPopupInputOptionDropdown | DadoPopupInputOptionDropdownSearch | DadoPopupInputOptionButton | DadoPopupInputOptionColor | DadoPopupInputOptionHTML | DadoPopupInputOptionToggle | DadoPopupInputOptionCheckbox | DadoPopupInputOptionURL | DadoPopupInputOptionFile | DadoPopupInputOptionFiles } DadoPopupInputOption */
-/** @typedef {{ id?: String; status: String; text: String; customClass?: String; backgroundColor?: String; textColor?: String; onClick?: DadoPopup_OnChange, verify?: DadoPopup_OnVerify }} DadoPopupEndorseButton */
+/** @typedef {{ id?: String; status: String; text: String; customClass?: String; backgroundColor?: String; textColor?: String; onClick?: DadoPopup_OnChangeEditable, verify?: DadoPopup_OnVerify }} DadoPopupEndorseButton */
 
 /**
  * @typedef {{
@@ -226,7 +231,7 @@ class DADOPOPUP_CLASS {
         addCallback(button.id, 'click', button.onClick)
     }
 
-    /** @param { DadoPopupOptionsInfo | DadoPopupOptionsForm } options * @returns { Promise<{ status: string, data?: any }> } */
+    /** @param { DadoPopupOptionsInfo | DadoPopupOptionsForm } options * @returns { Promise<{ status: string, data?: DadoPopup_Callback_DataObjectDirectContainer }> } */
     popup = options => new Promise(async (resolve, reject) => {
         try {
             const { genString, delay } = this
@@ -274,58 +279,64 @@ class DADOPOPUP_CLASS {
                 }
             }
 
-            const readValues = async (finalReadout = false) => {
+            const readValues = async () => {
+                /** @type { DadoPopup_Callback_DataObjectEditableContainer } */
                 const values = {}
                 let s = 1
                 for (const input of inputs) {
                     const { type, id } = input
-                    if (finalReadout) {
-                        if (type !== 'spacer' && type !== 'html' && type !== 'button') {
-                            const { name, type } = input // @ts-ignore
-                            values[name] = document.getElementById(`${modal_id}_${id}`).value
-                            if (type === 'textArea') values[name] = this.decodeTextArea(values[name])
-                            if (type === 'number') values[name] = values[name] !== '' ? Number(values[name]) : null // @ts-ignore
-                            if (type === 'checkbox' || type === 'toggle' || type === 'boolean') values[name] = document.getElementById(`${modal_id}_${id}`).checked
-                            if (type === 'date' && values[name] && values[name].includes('T')) values[name] = values[name].split('T')[0]
-                            if (type === 'time' && values[name] && values[name].includes('T')) values[name] = values[name].split('T')[1].split('Z')[0]
-                            if (type === 'file') { // @ts-ignore
-                                const files_input = document.getElementById(`${modal_id}_${id}`).files
-                                if (files_input && files_input.length > 0) values[name] = await this.file_reader(files_input)
-                            }
-                            if (type === 'files') { // @ts-ignore
-                                const files_input = document.getElementById(`${modal_id}_${id}`).files
-                                if (files_input && files_input.length > 0) values[name] = await this.file_reader(files_input)
-                                if (values[name] && !Array.isArray(values[name])) values[name] = [values[name]]
-                            }
-                        }
-                    } else {
-                        const name = type !== 'spacer' && type !== 'html' && type !== 'button' ? input.name : `spacer_${s++}`
-                        const element = document.getElementById(`${modal_id}_${id}`) // @ts-ignore
-                        let value = type !== 'spacer' && type !== 'html' && type !== 'button' && type !== 'file' ? element.value : ''
-                        if (type === 'textArea') value = this.decodeTextArea(value)
-                        if (type === 'number') value = value !== '' && Number.isFinite(+value) ? Number(value) : '' //  @ts-ignore
-                        if (type === 'checkbox' || type === 'toggle' || type === 'boolean') value = element.checked
-                        if (type === 'date' && value && value.includes('T')) value = value.split('T')[0]
-                        if (type === 'time' && value && value.includes('T')) value = value.split('T')[1].split('Z')[0]
+                    const name = type !== 'spacer' && type !== 'html' && type !== 'button' ? input.name : `spacer_${s++}`
+                    const element = document.getElementById(`${modal_id}_${id}`) // @ts-ignore
+                    let value = type !== 'spacer' && type !== 'html' && type !== 'button' && type !== 'file' ? element.value : ''
+                    if (type === 'textArea') value = this.decodeTextArea(value)
+                    if (type === 'number') value = value !== '' && Number.isFinite(+value) ? Number(value) : '' //  @ts-ignore
+                    if (type === 'checkbox' || type === 'toggle' || type === 'boolean') value = element.checked
+                    if (type === 'date' && value && value.includes('T')) value = value.split('T')[0]
+                    if (type === 'time' && value && value.includes('T')) value = value.split('T')[1].split('Z')[0]
+                    if (type === 'file') { // @ts-ignore
+                        const files_input = document.getElementById(`${modal_id}_${id}`).files
+                        if (files_input && files_input.length > 0) value = await this.file_reader(files_input, true) // Just get file info
+                    }
+                    if (type === 'files') { // @ts-ignore
+                        const files_input = document.getElementById(`${modal_id}_${id}`).files
+                        if (files_input && files_input.length > 0) value = await this.file_reader(files_input, true)
+                        if (value && !Array.isArray(value)) value = [value]
+                    }
+                    const output = {
+                        value, // @ts-ignore
+                        hide: () => { element.style.display = 'none'; if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'none' }, // @ts-ignore
+                        show: () => { element.style.display = 'block'; if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'block' },
+                        success: () => { element.classList.add('input-success'); element.classList.remove('input-error') },
+                        error: () => { element.classList.add('input-error'); element.classList.remove('input-success') },
+                        reset: () => { element.classList.remove('input-success'); element.classList.remove('input-error') },
+                    }
+                    values[name] = output
+                }
+                return values
+            }
+            const readValuesFinal = async () => {
+                /** @type { DadoPopup_Callback_DataObjectDirectContainer } */
+                const values = {}
+                let s = 1
+                for (const input of inputs) {
+                    const { type, id } = input
+                    if (type !== 'spacer' && type !== 'html' && type !== 'button') {
+                        const { name, type } = input // @ts-ignore
+                        values[name] = document.getElementById(`${modal_id}_${id}`).value // @ts-ignore
+                        if (type === 'textArea') values[name] = this.decodeTextArea(values[name])
+                        if (type === 'number') values[name] = values[name] !== '' ? Number(values[name]) : null // @ts-ignore
+                        if (type === 'checkbox' || type === 'toggle' || type === 'boolean') values[name] = document.getElementById(`${modal_id}_${id}`).checked // @ts-ignore
+                        if (type === 'date' && values[name] && values[name].includes('T')) values[name] = values[name].split('T')[0] // @ts-ignore
+                        if (type === 'time' && values[name] && values[name].includes('T')) values[name] = values[name].split('T')[1].split('Z')[0]
                         if (type === 'file') { // @ts-ignore
                             const files_input = document.getElementById(`${modal_id}_${id}`).files
-                            if (files_input && files_input.length > 0) value = await this.file_reader(files_input, true) // Just get file info
+                            if (files_input && files_input.length > 0) values[name] = await this.file_reader(files_input)
                         }
                         if (type === 'files') { // @ts-ignore
                             const files_input = document.getElementById(`${modal_id}_${id}`).files
-                            if (files_input && files_input.length > 0) value = await this.file_reader(files_input, true)
-                            if (value && !Array.isArray(value)) value = [value]
+                            if (files_input && files_input.length > 0) values[name] = await this.file_reader(files_input) // @ts-ignore
+                            if (values[name] && !Array.isArray(values[name])) values[name] = [values[name]]
                         }
-                        /** @type { DadoPopup_Callback_Data } */
-                        const output = {
-                            value, // @ts-ignore
-                            hide: () => { element.style.display = 'none'; if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'none' }, // @ts-ignore
-                            show: () => { element.style.display = 'block'; if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'block' },
-                            success: () => { element.classList.add('input-success'); element.classList.remove('input-error') },
-                            error: () => { element.classList.add('input-error'); element.classList.remove('input-success') },
-                            reset: () => { element.classList.remove('input-success'); element.classList.remove('input-error') },
-                        }
-                        values[name] = output
                     }
                 }
                 return values
@@ -367,7 +378,7 @@ class DADOPOPUP_CLASS {
                 }
             }
 
-            /** @param { DadoPopup_OnChange } preConfirm */
+            /** @param { DadoPopup_OnChangeEditable } preConfirm */
             const call_preConfirm = async preConfirm => {
                 if (!preConfirm || typeof preConfirm !== 'function') return
                 try {
@@ -520,7 +531,7 @@ class DADOPOPUP_CLASS {
                 this.removeDraggableDado(draggable)
                 await call_preConfirm(preConfirm)
                 const response = { status }
-                if (options.type === 'form') response.data = await readValues(true)
+                if (options.type === 'form') response.data = await readValuesFinal()
                 resolve(response)
                 modalContainer.classList.remove('shown')
                 await delay(500)
