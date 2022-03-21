@@ -71,6 +71,7 @@ SOFTWARE.
 .dadoPopup-container *::before,
 .dadoPopup-container *::after {
 	box-sizing: border-box;
+	font-family: Verdana  !important;
 }
 
 .dadoPopup-container {
@@ -173,6 +174,8 @@ SOFTWARE.
 }
 .dadoPopup-close-button:after {
 	content: '×';
+	font-size: 21px;
+	font-weight: bold;
 }
 
 .dadoPopup-form {
@@ -183,7 +186,6 @@ SOFTWARE.
 	grid-gap: 5px 0 5px 0;
 	grid-template-columns: 30% 70%;
 	padding-right: 30px;
-	font-family: Poppins;
 	max-height: 60vh;
 	overflow: auto;
 	overflow: overlay;
