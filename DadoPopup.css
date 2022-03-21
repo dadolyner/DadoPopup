@@ -214,7 +214,7 @@ SOFTWARE.
 	-webkit-background-color: var(--dado-primary) !important;
 	color: var(--dado-white-text) !important;
 	border-radius: 5px;
-	width: 100%;
+	width: 100% !important;
 	min-height: 42px;
 	max-width: 800px !important;
 	height: 42px;
