@@ -51,9 +51,10 @@ SOFTWARE.
 /** @typedef { DadoPopupInputCommon & { type: 'color'; name: string; placeholder?: string; value?: String; }} DadoPopupInputOptionColor */
 /** @typedef { DadoPopupInputCommon & { type: 'url'; name: string; placeholder?: string; value?: string; keyboard?: 'text'; }} DadoPopupInputOptionURL */
 /** @typedef { DadoPopupInputCommon & { type: 'file'; name: string; placeholder?: string; file_type?: string | string[]; }} DadoPopupInputOptionFile */
+/** @typedef { DadoPopupInputCommon & { type: 'files'; name: string; placeholder?: string; file_type?: string | string[]; }} DadoPopupInputOptionFiles */
 /** @typedef { DadoPopupInputCommon & { type: 'html'; value?: string; }} DadoPopupInputOptionHTML */
 
-/** @typedef { DadoPopupInputSpacer | DadoPopupInputOptionText | DadoPopupInputOptionTextArea | DadoPopupInputOptionPassword | DadoPopupInputOptionNumber | DadoPopupInputOptionRange | DadoPopupInputOptionDate | DadoPopupInputOptionTime | DadoPopupInputOptionDateTime | DadoPopupInputOptionBoolean | DadoPopupInputOptionDropdown | DadoPopupInputOptionDropdownSearch | DadoPopupInputOptionButton | DadoPopupInputOptionColor | DadoPopupInputOptionHTML | DadoPopupInputOptionToggle | DadoPopupInputOptionCheckbox | DadoPopupInputOptionURL | DadoPopupInputOptionFile } DadoPopupInputOption */
+/** @typedef { DadoPopupInputSpacer | DadoPopupInputOptionText | DadoPopupInputOptionTextArea | DadoPopupInputOptionPassword | DadoPopupInputOptionNumber | DadoPopupInputOptionRange | DadoPopupInputOptionDate | DadoPopupInputOptionTime | DadoPopupInputOptionDateTime | DadoPopupInputOptionBoolean | DadoPopupInputOptionDropdown | DadoPopupInputOptionDropdownSearch | DadoPopupInputOptionButton | DadoPopupInputOptionColor | DadoPopupInputOptionHTML | DadoPopupInputOptionToggle | DadoPopupInputOptionCheckbox | DadoPopupInputOptionURL | DadoPopupInputOptionFile | DadoPopupInputOptionFiles } DadoPopupInputOption */
 /** @typedef {{ id?: String; status: String; text: String; customClass?: String; backgroundColor?: String; textColor?: String; onClick?: DadoPopup_OnChange, verify?: DadoPopup_OnChange }} DadoPopupEndorseButton */
 
 /**
@@ -174,6 +175,11 @@ class DADOPOPUP_CLASS {
         return ''
     }
 
+    /** @param { String } input */
+    encodeTextArea = input => input.replace(/\n/g, '&#10')
+    /** @param { String } input */
+    decodeTextArea = input => input.replace(/&#10/g, '\n')
+
     release_callbacks = (modal_id) => {
         if (modal_id) {
             Object.keys(this.___temporaryCallbacks).filter(x => x.startsWith(modal_id)).forEach(key => delete this.___temporaryCallbacks[key])
@@ -190,12 +196,13 @@ class DADOPOPUP_CLASS {
         input.type = input.type || 'text'
         const { id, type } = input
         input.customClass = input.customClass || ''
-        if (type === 'text' || type === 'textArea' || type === 'password' || type === 'number' || type === 'color' || type === 'url' || type === 'file') input.placeholder = input.placeholder || ''
-        if (type !== 'spacer' && type !== 'password' && type !== 'file') input.value = input.value === undefined ? '' : input.value
+        if (type === 'text' || type === 'textArea' || type === 'password' || type === 'number' || type === 'color' || type === 'url' || type === 'file' || type === 'files') input.placeholder = input.placeholder || ''
+        if (type !== 'spacer' && type !== 'password' && type !== 'file' && type !== 'files') input.value = input.value === undefined ? '' : input.value
         if (type === 'dropdown') input.options = (input.options || []).flat(2)
         if (type === 'text' || type === 'textArea') input.fontFamily = input.fontFamily || 'Arial'
         if (type === 'color') input.value = input.value || '#FFFFFF'
         if (type === 'html') input.value = input.value || ''
+        if (type === 'textArea') input.value = this.encodeTextArea(input.value)
         input.hidden = input.hidden || false
         if (type !== 'spacer') {
             if (type === 'range') input.onChange = input.onChange || (() => { })
@@ -256,7 +263,7 @@ class DADOPOPUP_CLASS {
                                 next.focus()
                                 const type = next.nodeName.toLowerCase()
                                 const targetTypes = ['input', 'textarea'] // @ts-ignore
-                                if (targetTypes.includes(type)) { const val = next.value; next.value = ''; next.value = val }
+                                if (targetTypes.includes(type)) { const val = next.value; next.value = ''; next.value = type === 'textArea' ? this.encodeTextArea(val) : val }
                             } else document.getElementById(`${modal_id}_${buttons[0].id}`).click()
                         }
                         e.preventDefault()
@@ -274,6 +281,7 @@ class DADOPOPUP_CLASS {
                         if (type !== 'spacer' && type !== 'html' && type !== 'button') {
                             const { name, type } = input // @ts-ignore
                             values[name] = document.getElementById(`${modal_id}_${id}`).value
+                            if (type === 'textArea') values[name] = this.decodeTextArea(values[name])
                             if (type === 'number') values[name] = values[name] !== '' ? Number(values[name]) : null // @ts-ignore
                             if (type === 'checkbox' || type === 'toggle' || type === 'boolean') values[name] = document.getElementById(`${modal_id}_${id}`).checked
                             if (type === 'date' && values[name] && values[name].includes('T')) values[name] = values[name].split('T')[0]
@@ -282,11 +290,17 @@ class DADOPOPUP_CLASS {
                                 const files_input = document.getElementById(`${modal_id}_${id}`).files
                                 if (files_input && files_input.length > 0) values[name] = await this.file_reader(files_input)
                             }
+                            if (type === 'files') { // @ts-ignore
+                                const files_input = document.getElementById(`${modal_id}_${id}`).files
+                                if (files_input && files_input.length > 0) values[name] = await this.file_reader(files_input)
+                                if (values[name] && !Array.isArray(values[name])) values[name] = [values[name]]
+                            }
                         }
                     } else {
                         const name = type !== 'spacer' && type !== 'html' && type !== 'button' ? input.name : `spacer_${s++}`
                         const element = document.getElementById(`${modal_id}_${id}`) // @ts-ignore
                         let value = type !== 'spacer' && type !== 'html' && type !== 'button' && type !== 'file' ? element.value : ''
+                        if (type === 'textArea') value = this.decodeTextArea(value)
                         if (type === 'number') value = value !== '' && Number.isFinite(+value) ? Number(value) : '' //  @ts-ignore
                         if (type === 'checkbox' || type === 'toggle' || type === 'boolean') value = element.checked
                         if (type === 'date' && value && value.includes('T')) value = value.split('T')[0]
@@ -294,6 +308,11 @@ class DADOPOPUP_CLASS {
                         if (type === 'file') { // @ts-ignore
                             const files_input = document.getElementById(`${modal_id}_${id}`).files
                             if (files_input && files_input.length > 0) value = await this.file_reader(files_input, true) // Just get file info
+                        }
+                        if (type === 'files') { // @ts-ignore
+                            const files_input = document.getElementById(`${modal_id}_${id}`).files
+                            if (files_input && files_input.length > 0) value = await this.file_reader(files_input, true)
+                            if (value && !Array.isArray(value)) value = [value]
                         }
                         /** @type { DadoPopup_Callback_Data } */
                         const output = {
@@ -313,11 +332,12 @@ class DADOPOPUP_CLASS {
             const writeValues = async values => {
                 inputs.forEach(input => {
                     const { type } = input
-                    if (type !== 'spacer' && type !== 'html' && type !== 'button' && type !== 'file') {
+                    if (type !== 'spacer' && type !== 'html' && type !== 'button' && type !== 'file' && type !== 'files') {
                         const { id, name } = input
                         let value = values[name] ? values[name].value : ''
-                        if (type === 'number') value = value !== '' && Number.isFinite(+value) ? Number(value) : '' //  @ts-ignore
-                        document.getElementById(`${modal_id}_${id}`).value = value //  @ts-ignore
+                        if (type === 'number') value = value !== '' && Number.isFinite(+value) ? Number(value) : ''
+                        if (type === 'textArea') value = this.encodeTextArea(value) // @ts-ignore
+                        document.getElementById(`${modal_id}_${id}`).value = value  // @ts-ignore
                         if (type === 'checkbox' || type === 'toggle' || type === 'boolean') document.getElementById(`${modal_id}_${id}`).checked = !!value
                         if (type === 'range') {
                             const display_value = document.getElementById(`${modal_id}_${id}_value`)
@@ -361,8 +381,8 @@ class DADOPOPUP_CLASS {
                 this.compileInput(input, addCallback) // @ts-ignore
                 const { type, id, margin, hidden, customClass } = input
                 const input_id = `${modal_id}_${id}`
-                const value = type !== 'spacer' && type !== 'password' && type !== 'file' ? input.value : ''
-                const placeholder = type === 'text' || type === 'textArea' || type === 'password' || type === 'number' || type === 'color' || type === 'url' || type === 'file' ? input.placeholder : ''
+                const value = type !== 'spacer' && type !== 'password' && type !== 'file' && type !== 'files' ? input.value : ''
+                const placeholder = type === 'text' || type === 'textArea' || type === 'password' || type === 'number' || type === 'color' || type === 'url' || type === 'file' || type === 'files' ? input.placeholder : ''
                 const C = (customClass || '').split(' ')
                 const fontFamily = type === 'text' || type === 'textArea' ? `font-family: ${input.fontFamily};` : ''
                 const keyboard = type === 'text' || type === 'date' || type === 'time' || type === 'datetime' || type === 'textArea' || type === 'password' || type === 'number' || type === 'url' ? this.buildKeyboard(input.keyboard) : ''
@@ -370,7 +390,7 @@ class DADOPOPUP_CLASS {
                 if ((type === 'text' || type === 'number' || type === 'password' || type === 'url' || type === 'textArea') && !C.includes(`js-virtual-keyboard`)) C.push('js-virtual-keyboard')
                 const CLASS = C.join(' ')
                 const color = type === 'spacer' || type === 'button' ? input.color : ''
-                const file_type = type === 'file' ? (Array.isArray(input.file_type) ? input.file_type.join(',') : input.file_type) : ''
+                const file_type = type === 'file' || type === 'files' ? (Array.isArray(input.file_type) ? input.file_type.join(',') : input.file_type) : ''
                 const numbered = type === 'dropdown' ? input.numbered : false
                 let selected_index = 1
                 const dropdown_options = type === 'dropdown' || type === 'dropdown-search' ? (input.options.map((option, i) => `<option value="${option}" ${value === option && (selected_index = i + 1) ? 'selected' : ''}>${numbered ? `${i + 1}. ` : ''}${option}</option>`).join('\n')) : ''
@@ -410,6 +430,7 @@ class DADOPOPUP_CLASS {
                         case 'html': return `<div class="dadoPopupHtml full-label ${CLASS}" id="${input_id}" style="margin-top: ${margin}px;${hidden ? 'display: none;' : ''}">${value}</div>`
                         case 'url': return `<input type="url" class="dadoPopup-default-input dadoPopupURL ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" id="${input_id}" placeholder="${placeholder}" value="${value || ''}" ${kbd} required="true" data-toggle="validator" autocomplete="new-password" style="margin-top: ${margin}px; ${hidden ? 'display: none;' : ''}" ${callback} popup-input />`
                         case 'file': return `<input type="file" id="${input_id}" style="margin-top: ${margin}px; ${hidden ? 'display: none;' : ''}" class="dadoPopup-default-input dadoPopupFile ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" ${callback} ${file_type ? `accept="${file_type}"` : ''}/></input>`
+                        case 'files': return `<input type="file" id="${input_id}" style="margin-top: ${margin}px; ${hidden ? 'display: none;' : ''}" class="dadoPopup-default-input dadoPopupFile ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" ${callback} ${file_type ? `accept="${file_type}"` : ''} multiple/></input>`
                         case 'date': return `<input type="date" class="dadoPopup-default-input dadoPopupDate ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" id="${input_id}" value="${value || ''}" ${kbd} required="true" data-toggle="validator" style="${fontFamily} margin-top: ${margin}px; ${hidden ? 'display: none;' : ''}" ${callback} popup-input />`
                         case 'time': return `<input type="time" class="dadoPopup-default-input dadoPopupTime ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" id="${input_id}" value="${value || ''}" ${kbd} required="true" data-toggle="validator" style="${fontFamily} margin-top: ${margin}px; ${hidden ? 'display: none;' : ''}" ${callback} popup-input />`
                         case 'datetime': return `<input type="datetime-local" class="dadoPopup-default-input dadoPopupDateTime ${input_group_id} ${isFirst ? first_id : ''} ${CLASS}" id="${input_id}" value="${value || ''}" ${kbd} required="true" data-toggle="validator" style="${fontFamily} margin-top: ${margin}px; ${hidden ? 'display: none;' : ''}" ${callback} popup-input />`
