@@ -73,7 +73,8 @@ SOFTWARE.
  *          text?: string,
  *          confirmButtonText?: string,
  *      },
- *      allowEnterKey?: true
+ *      allowEnterKey?: true,
+ *      verify?: DadoPopup_OnVerify
  * }} DadoPopupOptionsDefault
 */
 
@@ -235,7 +236,7 @@ class DADOPOPUP_CLASS {
             options.style = options.style || 'light'
             /** @type { DadoPopupInputOption[] } */
             const inputs = (options.type === 'form' ? options.inputs : [{ type: 'html', value: options.text }]) || []
-            options.buttons = options.buttons && Array.isArray(options.buttons) && options.buttons.length > 0 ? options.buttons : [{ text: options.confirmButtonText, status: 'confirmed' }]
+            options.buttons = options.buttons && Array.isArray(options.buttons) && options.buttons.length > 0 ? options.buttons : [{ text: options.confirmButtonText, status: 'confirmed', verify: options.verify || (() => true) }]
             if (!keys.includes('backdrop')) options.backdrop = true
             if (keys.includes('labelWidth')) options.labelWidth = +options.labelWidth > 100 ? 100 : +options.labelWidth < 0 ? 0 : +options.labelWidth
             const { buttons, style, preConfirm, allowEnterKey, backdrop, closeWarning, labelWidth } = options
