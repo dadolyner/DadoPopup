@@ -147,6 +147,12 @@ const Example = async () => {
                 value: 0,
                 min: 0,
                 max: 100,
+                onChange: async data => {
+                    const { range, url } = data
+                    if (range.value <= 30) url.error()
+                    else if (range.value >= 70) url.success()
+                    else url.reset()
+                }
             },
         ]
     })
