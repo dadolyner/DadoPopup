@@ -29,6 +29,7 @@ SOFTWARE.
 /** @typedef {{ value: any, show: () => void, hide: () => void, success: () => void, error: () => void, reset: () => void }} DadoPopup_Callback_Data */
 
 /** @typedef { ({...DadoPopup_Callback_Data}) => (void | Promise) } DadoPopup_OnChange */
+/** @typedef { ({...DadoPopup_Callback_Data}) => (Boolean | Promise<Boolean>) } DadoPopup_OnVerify */
 /** @typedef { (input_id: String, group: 'cb' | 'click' | 'change' | 'done' | 'rangeChange', callback: DadoPopup_OnChange) => void } DadoPopup_addCallback */
 
 /** @typedef {{ id?: string; label?: string; hidden?: boolean; onChange?: DadoPopup_OnChange; onFocusOut?: DadoPopup_OnChange; margin?: number; customClass?: string; }} DadoPopupInputCommon */
@@ -55,7 +56,7 @@ SOFTWARE.
 /** @typedef { DadoPopupInputCommon & { type: 'html'; value?: string; }} DadoPopupInputOptionHTML */
 
 /** @typedef { DadoPopupInputSpacer | DadoPopupInputOptionText | DadoPopupInputOptionTextArea | DadoPopupInputOptionPassword | DadoPopupInputOptionNumber | DadoPopupInputOptionRange | DadoPopupInputOptionDate | DadoPopupInputOptionTime | DadoPopupInputOptionDateTime | DadoPopupInputOptionBoolean | DadoPopupInputOptionDropdown | DadoPopupInputOptionDropdownSearch | DadoPopupInputOptionButton | DadoPopupInputOptionColor | DadoPopupInputOptionHTML | DadoPopupInputOptionToggle | DadoPopupInputOptionCheckbox | DadoPopupInputOptionURL | DadoPopupInputOptionFile | DadoPopupInputOptionFiles } DadoPopupInputOption */
-/** @typedef {{ id?: String; status: String; text: String; customClass?: String; backgroundColor?: String; textColor?: String; onClick?: DadoPopup_OnChange, verify?: DadoPopup_OnChange }} DadoPopupEndorseButton */
+/** @typedef {{ id?: String; status: String; text: String; customClass?: String; backgroundColor?: String; textColor?: String; onClick?: DadoPopup_OnChange, verify?: DadoPopup_OnVerify }} DadoPopupEndorseButton */
 
 /**
  * @typedef {{
