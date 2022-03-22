@@ -80,6 +80,7 @@ SOFTWARE.
  *      },
  *      allowEnterKey?: true,
  *      verify?: DadoPopup_OnVerify
+ *      hideButtons?: boolean,
  * }} DadoPopupOptionsDefault
 */
 
@@ -244,7 +245,7 @@ class DADOPOPUP_CLASS {
             options.buttons = options.buttons && Array.isArray(options.buttons) && options.buttons.length > 0 ? options.buttons : [{ text: options.confirmButtonText, status: 'confirmed', verify: options.verify || (() => true) }]
             if (!keys.includes('backdrop')) options.backdrop = true
             if (keys.includes('labelWidth')) options.labelWidth = +options.labelWidth > 100 ? 100 : +options.labelWidth < 0 ? 0 : +options.labelWidth
-            const { buttons, style, preConfirm, allowEnterKey, backdrop, closeWarning, labelWidth } = options
+            const { buttons, style, preConfirm, allowEnterKey, backdrop, closeWarning, labelWidth, hideButtons } = options
 
             const modal_id = 'x' + genString(12)
             const close_id = `${modal_id}_close`
@@ -495,11 +496,9 @@ class DADOPOPUP_CLASS {
                 `       ${inputs.map(buildInput).join('')}`,
                 `   </form>`,
                 `   <br class="no-select" />`,
-                `   <div class="dadoPopup-buttons-container">`,
-                `       ${buttons.map(buildEndorseButton).join('')}`,
-                `   <div/>`,
+                hideButtons ? '' : `   <div class="dadoPopup-buttons-container">${buttons.map(buildEndorseButton).join('')}<div/>`,
                 `</div>`,
-            ].join('\n')
+            ].filter(Boolean).join('\n')
             document.body.appendChild(modalContainer)
             await delay(10)
             modalContainer.classList.add('shown')
