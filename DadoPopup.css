@@ -80,9 +80,8 @@ SOFTWARE.
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background-color: rgba(0, 0, 0, 0.5);
-	-webkit-background-color: rgba(0, 0, 0, 0.5);
-	/* backdrop-filter: blur(2px); */
+	background: rgba(0, 0, 0, 0.5);
+	-webkit-background: rgba(0, 0, 0, 0.5);
 	top: 0;
 	left: 0;
 	height: 100vh;
@@ -186,7 +185,7 @@ SOFTWARE.
 	grid-gap: 5px 0 5px 0;
 	grid-template-columns: 30% 70%;
 	padding-right: 30px;
-	max-height: 60vh;
+	max-height: 80vh;
 	overflow: auto;
 	overflow: overlay;
 }
@@ -202,6 +201,10 @@ SOFTWARE.
 	font-size: 16px;
 	-moz-user-select: none;
 	user-select: none;
+}
+
+.dadoPopup.full-screen .dadoPopup-form {
+	max-height: 90%;
 }
 
 /* Inputs styles */
