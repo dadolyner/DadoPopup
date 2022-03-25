@@ -185,7 +185,7 @@ SOFTWARE.
 	grid-gap: 5px 0 5px 0;
 	grid-template-columns: 30% 70%;
 	padding-right: 30px;
-	max-height: 80vh;
+	max-height: 80%;
 	overflow: auto;
 	overflow: overlay;
 }
