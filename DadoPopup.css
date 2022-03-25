@@ -245,8 +245,8 @@ SOFTWARE.
 }
 
 .dadoPopupCheckbox {
-	width: auto;
-	float: left;
+	width: auto !important;
+	float: left !important;
 	margin-left: 25px;
 	min-height: 32px;
 	min-width: 32px;
