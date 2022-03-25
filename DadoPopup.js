@@ -78,6 +78,7 @@ SOFTWARE.
  *          text?: string,
  *          confirmButtonText?: string,
  *      },
+ *      closeTrigger?: (close_method: () => Promise) => void,
  *      allowEnterKey?: true,
  *      verify?: DadoPopup_OnVerify
  *      hideButtons?: boolean,
@@ -557,6 +558,8 @@ class DADOPOPUP_CLASS {
                     this.removeDraggableDado(draggable)
                 }
             }
+
+            if (options.closeTrigger) options.closeTrigger(close_modal)
 
             const confirmations = {}
             for (const button of buttons) {
