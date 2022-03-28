@@ -319,7 +319,6 @@ class DADOPOPUP_CLASS {
             const readValuesFinal = async () => {
                 /** @type { DadoPopup_Callback_DataObjectDirectContainer } */
                 const values = {}
-                let s = 1
                 for (const input of inputs) {
                     const { type, id } = input
                     if (type !== 'spacer' && type !== 'html' && type !== 'button') {
