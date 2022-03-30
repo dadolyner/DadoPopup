@@ -70,6 +70,7 @@ SOFTWARE.
  * @typedef {{
  *      title?: string,
  *      style?: 'dark' | 'light',
+ *      customClass?: string,
  *      labelWidth?: Number,
  *      buttons?: DadoPopupEndorseButton[],
  *      size?: 'small' | 'medium' | 'large' | 'extra-large' | 'full-screen',
@@ -259,12 +260,13 @@ class DADOPOPUP_CLASS {
             options.preConfirm = options.preConfirm || (() => { })
             options.confirmButtonText = options.confirmButtonText || 'OK'
             options.style = options.style || 'light'
+            options.customClass = options.customClass || ''
             /** @type { DadoPopupInputOption[] } */
             const inputs = (options.type === 'form' ? options.inputs : [{ type: 'html', value: options.text }]) || []
             options.buttons = options.buttons && Array.isArray(options.buttons) && options.buttons.length > 0 ? options.buttons : [{ text: options.confirmButtonText, status: 'confirmed', verify: options.verify || (() => true) }]
             if (!keys.includes('backdrop')) options.backdrop = true
             if (keys.includes('labelWidth')) options.labelWidth = +options.labelWidth > 100 ? 100 : +options.labelWidth < 0 ? 0 : +options.labelWidth
-            const { buttons, style, preConfirm, allowEnterKey, backdrop, closeWarning, labelWidth, hideButtons } = options
+            const { buttons, style, customClass, preConfirm, allowEnterKey, backdrop, closeWarning, labelWidth, hideButtons } = options
 
             const modal_id = 'x' + genString(12)
             const close_id = `${modal_id}_close`
@@ -507,7 +509,7 @@ class DADOPOPUP_CLASS {
             if (backdrop) modalContainer.onclick = e => { if (e.target.classList.contains('dadoPopup-container')) on_close() }
 
             modalContainer.innerHTML = [
-                `<div id="${modal_id}" class="dadoPopup">`,
+                `<div id="${modal_id}" class="dadoPopup ${customClass}">`,
                 `   <div class="dadoPopup-header-bar">`,
                 `       <div id="${close_id}" class="dadoPopup-close-button"></div>`,
                 `   </div>`,
