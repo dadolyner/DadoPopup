@@ -24,7 +24,7 @@ SOFTWARE.
 */
 
 :root {
-	font-family: Verdana  !important;
+	font-family: Verdana !important;
 }
 
 .dadoPopup-container.dark {
@@ -71,11 +71,11 @@ SOFTWARE.
 .dadoPopup-container *::before,
 .dadoPopup-container *::after {
 	box-sizing: border-box;
-	font-family: Verdana  !important;
+	font-family: Verdana !important;
 }
 
 .dadoPopup-container {
-	font-family: Verdana  !important;
+	font-family: Verdana !important;
 	position: fixed;
 	display: flex;
 	align-items: center;
@@ -88,8 +88,6 @@ SOFTWARE.
 	width: 100vw;
 	opacity: 0;
 	pointer-events: none;
-	animation-name: closed;
-	animation-duration: 0.2s;
 	transition: opacity 0.3s ease;
 	z-index: 1000;
 }
@@ -132,7 +130,8 @@ SOFTWARE.
 
 .dadoPopup-buttons-container button {
 	margin: 0 5px 0 5px !important;
-	max-width: 150px !important;
+	max-width: fit-content !important;
+	padding: 0 10px;
 }
 
 .dadoPopup-header-bar {
@@ -228,6 +227,9 @@ SOFTWARE.
 	font-size: 16px;
 	transition: all 0.3s ease;
 }
+.dadoPopup-default-input:nth-last-child(1) {
+	margin-bottom: 5px;
+}
 
 .dadoPopup-default-input:focus,
 .dadoPopup-default-input:active {
@@ -290,7 +292,7 @@ SOFTWARE.
 	left: 2px;
 	top: 2px;
 	border-radius: 50%;
-	font: 10px/28px Verdana ;
+	font: 10px/28px Verdana;
 	text-transform: uppercase;
 	font-weight: bold;
 	text-indent: -22px;
@@ -356,7 +358,7 @@ SOFTWARE.
 	height: 2px;
 	border: 0;
 	padding: 0;
-	max-width: 800px;
+	max-width: 100%;
 }
 
 .dadoPopupURL {
@@ -569,16 +571,5 @@ SOFTWARE.
 	}
 	100% {
 		transform: scale(1);
-	}
-}
-@keyframes closed {
-	0% {
-		transform: scale(1);
-	}
-	50% {
-		transform: scale(1.2);
-	}
-	100% {
-		transform: scale(0.8);
 	}
 }
