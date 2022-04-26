@@ -91,6 +91,12 @@ SOFTWARE.
 
 /**
  * @typedef { DadoPopupOptionsDefault & {
+ *      type: 'confirm',
+ *      text: string,
+ * }} DadoPopupOptionsConfirm
+*/
+/**
+ * @typedef { DadoPopupOptionsDefault & {
  *      type: 'info',
  *      text: string,
  * }} DadoPopupOptionsInfo
@@ -252,9 +258,49 @@ class DADOPOPUP_CLASS {
         addCallback(button.id, 'click', button.onClick)
     }
 
-    /** @param { DadoPopupOptionsInfo | DadoPopupOptionsForm } options * @returns { Promise<{ status: string, data?: DadoPopup_Callback_DataObjectDirectContainer }> } */
+
+    /** @param {{ title: string, text?: string, confirmButtonText?: string, confirmButtonColor?: string, confirmButtonTextColor?: string, style?: "dark" | "light" }} options * @returns { Promise<boolean> } */
+    confirm = async options => {
+        const title = options.title || 'Are you sure you want to continue?'
+        const text = options.text || ''
+        /** @type { [DadoPopupEndorseButton] } */
+        const buttons = [{ text: options.confirmButtonText || 'Yes', status: 'confirmed' }]
+        if (options.confirmButtonColor) buttons[0].backgroundColor = options.confirmButtonColor
+        if (options.confirmButtonTextColor) buttons[0].textColor = options.confirmButtonTextColor
+        delete options.title
+        delete options.text
+        delete options.confirmButtonText
+        delete options.confirmButtonColor
+        delete options.confirmButtonTextColor
+        /** @type { DadoPopupOptionsForm } */
+        const parameters = { type: "form", title: `<span style="font-weight:bold !important">${title}</span><br/>${text}`, style: 'light', inputs: [], buttons, confirmButtonText: 'Yes', }
+        Object.assign(parameters, typeof options === 'object' ? options : {})
+        const result = await this.popup(parameters)
+        return result.status === 'confirmed'
+    }
+
+
+    /** @param { DadoPopupOptionsForm | DadoPopupOptionsInfo | DadoPopupOptionsWarn | DadoPopupOptionsAlert } options * @returns { Promise<{ status: string, data?: DadoPopup_Callback_DataObjectDirectContainer }> } */
     popup = options => new Promise(async (resolve, reject) => {
         try {
+            const { type } = options
+            if (type !== 'form') {
+                try {
+                    switch (type) {
+                        case 'info': break;
+                        case 'warn': break;
+                        case 'alert': break;
+                        default: return;
+                    }
+                    /** @type { DadoPopupOptionsForm } */// @ts-ignore
+                    const parameters = Object.assign({ inputs: [{ type: 'html', value: options.text }], hideButtons: true }, options, { type: 'form' })
+                    const result = await this.popup(parameters)
+                    resolve(result)
+                } catch (e) {
+                    reject(e)
+                }
+                return
+            }
             const { genString, delay } = this
             const keys = Object.keys(options)
             options.preConfirm = options.preConfirm || (() => { })
@@ -262,7 +308,7 @@ class DADOPOPUP_CLASS {
             options.style = options.style || 'light'
             options.customClass = options.customClass || ''
             /** @type { DadoPopupInputOption[] } */
-            const inputs = (options.type === 'form' ? options.inputs : [{ type: 'html', value: options.text }]) || []
+            const inputs = options.inputs || []
             options.buttons = options.buttons && Array.isArray(options.buttons) && options.buttons.length > 0 ? options.buttons : [{ text: options.confirmButtonText, status: 'confirmed', verify: options.verify || (() => true) }]
             if (!keys.includes('backdrop')) options.backdrop = true
             if (keys.includes('labelWidth')) options.labelWidth = +options.labelWidth > 100 ? 100 : +options.labelWidth < 0 ? 0 : +options.labelWidth
@@ -496,13 +542,8 @@ class DADOPOPUP_CLASS {
 
             const on_close = async () => {
                 if (closeWarning) {
-                    const options = typeof closeWarning === 'object' ? closeWarning : {}
-                    options.title = options.title || 'Are you sure you want to close this popup?'
-                    options.text = options.text || 'All changes will be lost'
-                    options.confirmButtonText = options.confirmButtonText || 'Yes'
-                    const { title, text, confirmButtonText } = options
-                    const result = await this.popup({ type: 'form', style, title: `<span style="font-weight:bold !important">${title}</span><br/>${text}`, confirmButtonText })
-                    if (result.status !== 'confirmed') return
+                    const confirmed = await this.confirm({ title: 'Are you sure you want to close?', text: 'You will lose any unsaved changes.', confirmButtonText: 'Close', confirmButtonColor: '#F33' })
+                    if (!confirmed) return
                 }
                 close_modal()
             }
@@ -561,7 +602,8 @@ class DADOPOPUP_CLASS {
             }
             let closing = false
             const close_modal = async () => {
-                if (closing) return; else closing = true
+                if (closing) return
+                closing = true
                 this.removeDraggableDado(draggable)
                 resolve({ status: 'closed' })
                 modalContainer.classList.remove('shown')
@@ -616,3 +658,4 @@ class DADOPOPUP_CLASS {
 
 const DadoPopupClass = new DADOPOPUP_CLASS()
 const DadoPopup = DadoPopupClass.popup
+const DadoConfirm = DadoPopupClass.confirm
