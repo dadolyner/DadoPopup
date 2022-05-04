@@ -28,7 +28,7 @@ SOFTWARE.
 
 /** @typedef {{ name: String, type: String, size: Number, lastModified: Number, data?: String } } DadoPopupFile*/
 /** @typedef { Boolean | Number | String | DadoPopupFile | DadoPopupFile[] | void } DadoPopup_Callback_DataDirect */
-/** @typedef {{ value: DadoPopup_Callback_DataDirect, show: () => void, hide: () => void, success: () => void, error: () => void, reset: () => void }} DadoPopup_Callback_DataEditable */
+/** @typedef {{ element: HTMLElement, value: DadoPopup_Callback_DataDirect, show: () => void, hide: () => void, success: () => void, error: () => void, reset: () => void }} DadoPopup_Callback_DataEditable */
 
 /** @typedef { Object.<string, DadoPopup_Callback_DataDirect> } DadoPopup_Callback_DataObjectDirectContainer */
 /** @typedef { Object.<string, DadoPopup_Callback_DataEditable> } DadoPopup_Callback_DataObjectEditableContainer */
@@ -372,6 +372,7 @@ class DADOPOPUP_CLASS {
                         if (value && !Array.isArray(value)) value = [value]
                     }
                     const output = {
+                        element,
                         value, // @ts-ignore
                         hide: () => { element.style.display = 'none'; if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'none' }, // @ts-ignore
                         show: () => { element.style.display = 'block'; if (element.previousSibling && element.previousSibling.style) element.previousSibling.style.display = 'block' },
