@@ -320,32 +320,31 @@ class DADOPOPUP {
             const input_group_id = `${modal_id}_input`
             const first_id = `${modal_id}_input_first`
 
-            if (allowEnterKey) {
-                let busy = false
-                this.___popupTriggerNext[modal_id] = (e) => {
-                    if (busy) return
-                    busy = true
-                    const ctrl = e.ctrlKey
-                    const alt = e.altKey
-                    const shift = e.shiftKey
-                    if (e.key === 'Enter' && !ctrl && !alt && !shift) {
-                        const element = document.activeElement
-                        if (element) {
-                            const n = element ? element.nextSibling : null
-                            let next = n ? n.nextSibling : null // @ts-ignore
-                            while (next && next.style.display === 'none') next = next.nextSibling.nextSibling
-                            const hasNext = !!next
-                            if (hasNext) { // @ts-ignore
-                                next.focus()
-                                const type = next.nodeName.toLowerCase()
-                                const targetTypes = ['input', 'textarea'] // @ts-ignore
-                                if (targetTypes.includes(type)) { const val = next.value; next.value = ''; next.value = type === 'textArea' ? this.encodeTextArea(val) : val }
-                            } else document.getElementById(`${modal_id}_${buttons[0].id}`).click()
-                        }
-                        e.preventDefault()
+
+            let busy = false
+            this.___popupTriggerNext[modal_id] = (e) => {
+                if (busy) return
+                busy = true
+                const ctrl = e.ctrlKey
+                const alt = e.altKey
+                const shift = e.shiftKey
+                if (e.key === 'Enter' && !ctrl && !alt && !shift) {
+                    const element = document.activeElement
+                    if (element && allowEnterKey) {
+                        const n = element ? element.nextSibling : null
+                        let next = n ? n.nextSibling : null // @ts-ignore
+                        while (next && next.style.display === 'none') next = next.nextSibling.nextSibling
+                        const hasNext = !!next
+                        if (hasNext) { // @ts-ignore
+                            next.focus()
+                            const type = next.nodeName.toLowerCase()
+                            const targetTypes = ['input', 'textarea'] // @ts-ignore
+                            if (targetTypes.includes(type)) { const val = next.value; next.value = ''; next.value = type === 'textArea' ? this.encodeTextArea(val) : val }
+                        } else document.getElementById(`${modal_id}_${buttons[0].id}`).click()
                     }
-                    busy = false
+                    e.preventDefault()
                 }
+                busy = false
             }
 
             const readValues = async () => {
@@ -487,8 +486,8 @@ class DADOPOPUP {
                 else if (type !== 'spacer') {
                     const change = input.onChange ? `DadoPopupClass.call_callback('${input_id}_change')` : ''
                     const done = input.onFocusOut ? `DadoPopupClass.call_callback('${input_id}_done')` : ''
-                    const next = allowEnterKey ? `DadoPopupClass.call_next('${modal_id}')` : ''
-                    const keydown = ['event.preventDefault()', change, next].filter(Boolean).join(';')
+                    const next = `DadoPopupClass.call_next('${modal_id}')`
+                    const keydown = [change, next].filter(Boolean).join(';')
                     callbacks.push(` onkeydown="${keydown}"`)
                     callbacks.push(change ? ` onchange="${change}"` : '')
                     callbacks.push(done ? ` onfocusout="${done}"` : '')
