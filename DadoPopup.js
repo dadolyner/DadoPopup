@@ -83,7 +83,7 @@ SOFTWARE.
  *          confirmButtonText?: string,
  *      },
  *      closeTrigger?: (close_method: () => Promise) => void,
- *      allowEnterKey?: true,
+ *      allowEnterKey?: boolean,
  *      verify?: DadoPopup_OnVerify
  *      hideButtons?: boolean,
  * }} DadoPopupOptionsDefault
@@ -274,7 +274,7 @@ class DADOPOPUP {
         delete options.confirmButtonColor
         delete options.confirmButtonTextColor
         /** @type { DadoPopupOptionsForm } */
-        const parameters = { type: "form", title: `<span style="font-weight:bold !important">${title}</span><br/>${text}`, style: 'light', inputs: [], buttons, confirmButtonText: 'Yes', }
+        const parameters = { type: "form", title: `<span style="font-weight:bold !important">${title}</span><br/>${text}`, style: 'light', inputs: [], buttons, confirmButtonText: 'Yes' }
         Object.assign(parameters, typeof options === 'object' ? options : {})
         const result = await this.popup(parameters)
         return result.status === 'confirmed'
@@ -308,6 +308,7 @@ class DADOPOPUP {
             options.confirmButtonText = options.confirmButtonText || 'OK'
             options.style = options.style || 'light'
             options.customClass = options.customClass || ''
+            options.allowEnterKey = options.allowEnterKey === undefined ? true : !!options.allowEnterKey
             /** @type { DadoPopupInputOption[] } */
             const inputs = options.inputs || []
             options.buttons = options.buttons && Array.isArray(options.buttons) && options.buttons.length > 0 ? options.buttons : [{ text: options.confirmButtonText, status: 'confirmed', verify: options.verify || (() => true) }]
