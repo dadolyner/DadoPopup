@@ -291,7 +291,7 @@ class DADOPOPUP {
                         case 'info': break;
                         case 'warn': break;
                         case 'alert': break;
-                        default: return;
+                        default: return reject(new Error(`Unknown popup type: ${JSON.stringify(type)} - available types: "info", "warn", "alert", "form"`))
                     }
                     /** @type { DadoPopupOptionsForm } */// @ts-ignore
                     const parameters = Object.assign({ inputs: [{ type: 'html', value: options.text }], hideButtons: true }, options, { type: 'form' })
