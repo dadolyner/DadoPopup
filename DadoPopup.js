@@ -546,7 +546,8 @@ class DADOPOPUP {
 
             const on_close = async () => {
                 if (closeWarning) {
-                    const confirmed = await this.confirm({ title: 'Are you sure you want to close?', text: 'You will lose any unsaved changes.', confirmButtonText: 'Close', confirmButtonColor: '#F33' })
+                    const options = typeof closeWarning === 'object' ? closeWarning : { title: 'Are you sure you want to close?', text: 'You will lose any unsaved changes.', confirmButtonText: 'Close', confirmButtonColor: '#F33' }
+                    const confirmed = await this.confirm(options)
                     if (!confirmed) return
                 }
                 close_modal()
