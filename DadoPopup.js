@@ -78,9 +78,10 @@ SOFTWARE.
  *      preConfirm?: () => void | Promise,
  *      backdrop?: boolean,
  *      closeWarning?: boolean | {
- *          title?: string,
+ *          title: string,
  *          text?: string,
  *          confirmButtonText?: string,
+ *          confirmButtonColor?: string,
  *      },
  *      closeTrigger?: (close_method: () => Promise) => void,
  *      allowEnterKey?: boolean,
