@@ -282,7 +282,7 @@ class DADOPOPUP {
         const result = await this.popup(parameters)
         return result.status === 'confirmed'
     }
-    /** @param {{ title?: string; info?: string; progress?: number; close_message?: string; close_btn?: string; }} options */
+    /** @param {{ title?: string; info?: string; progress?: number; close_message?: string; close_btn?: string; style?: "dark" | "light" }} options */
     progress = options => {
         const output = {
             /** @param { number } percent * @param { string } [info] */
@@ -290,11 +290,12 @@ class DADOPOPUP {
             stopped: false,
             close: () => { }
         }
-        const { title, info, progress, close_message, close_btn } = options || {}
+        const { title, info, progress, close_message, close_btn, style } = options || {}
         const id = this.genString(12, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTEVWXYZ')
-        const exit = { title: close_message || 'Are you sure you want to stop?', text: '', confirmButtonText: 'Yes', confirmButtonColor: '#F33' }
+        const exit = { title: close_message || 'Are you sure you want to stop?', text: '', confirmButtonText: 'Yes', confirmButtonColor: '#F33', confirmButtonTextColor: '#FFF', style: style || 'light' }
         this.popup({
             type: 'form',
+            style: style || 'light',
             title: title || 'Loading...',
             noScroll: true,
             inputs: [{
@@ -305,8 +306,9 @@ class DADOPOPUP {
             buttons: [{
                 text: close_btn || 'Cancel',
                 backgroundColor: '#F33',
+                textColor: '#FFF',
                 status: 'stop',
-                verify: () => DadoConfirm(exit),
+                verify: () => this.confirm(exit),
             }],
             closeWarning: exit,
             closeTrigger: c => output.close = c
@@ -583,7 +585,7 @@ class DADOPOPUP {
 
             const on_close = async () => {
                 if (closeWarning) {
-                    const options = typeof closeWarning === 'object' ? closeWarning : { title: 'Are you sure you want to close?', text: 'You will lose any unsaved changes.', confirmButtonText: 'Close', confirmButtonColor: '#F33' }
+                    const options = typeof closeWarning === 'object' ? closeWarning : { title: 'Are you sure you want to close?', text: 'You will lose any unsaved changes.', confirmButtonText: 'Close', confirmButtonColor: '#F33', confirmButtonTextColor: '#FFF', style: style || 'light' }
                     const confirmed = await this.confirm(options)
                     if (!confirmed) return
                 }
