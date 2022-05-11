@@ -32,6 +32,7 @@ SOFTWARE.
 	--dado-primary-darken: #1b1e2b;
 	--dado-secondary: #ffa500;
 	--dado-secondary-darken: #cc8400;
+	--dado-secondary-darken-darken: #8b5a00;
 	--dado-close: #f20300;
 	--dado-close-darken: #b20200;
 	--dado-white-text: #fff;
@@ -52,6 +53,7 @@ SOFTWARE.
 	--dado-primary-darken: #ccc;
 	--dado-secondary: #2274c7;
 	--dado-secondary-darken: #1166bb;
+	--dado-secondary-darken-darken: #003e7d;
 	--dado-close: #f20300;
 	--dado-close-darken: #b20200;
 	--dado-white-text: #595959;
@@ -580,18 +582,21 @@ SOFTWARE.
 .loading-bar-info {
     width: 100%;
 	margin: 5px auto;
+	text-align: left;
 }
 
 .loading-bar-container {
     height: 40px;
     width: 100%;
-    background-color: #ddd;
+    background-color: var(--dado-primary-darken);
     border-radius: 5px 5px 5px 5px !important;
+	transition: all 0.1s ease-in-out;
 }
 
 .loading-bar {
 	height: 40px;
     width: 0%;
-    background-color: #00aa00;
+    background: linear-gradient(var(--dado-secondary), var(--dado-secondary-darken-darken));
 	border-radius: 5px 5px 5px 5px !important;
+	transition: all 0.1s ease-in-out;
 }
