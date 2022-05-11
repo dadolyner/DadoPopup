@@ -281,7 +281,42 @@ class DADOPOPUP {
         const result = await this.popup(parameters)
         return result.status === 'confirmed'
     }
+    /** @param {{ title?: string; info?: string; progress?: number; close_message: any; close_btn: any; }} options */
+    progress = options => {
+        const output = {
+            /** @param { number } percent * @param { string } [info] */
+            update: (percent, info) => { },
+            stopped: false,
+            close: () => { }
+        }
+        const { title, info, progress, close_message, close_btn } = options || {}
+        const id = this.genString(12, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTEVWXYZ')
+        const exit = { title: close_message || 'Are you sure you want to stop?', text: '', confirmButtonText: 'Yes', confirmButtonColor: '#F33' }
+        this.popup({
+            type: 'form',
+            title: title || 'Loading...',
+            inputs: [{
+                type: 'html',
+                value: `<div id="${id}_progress_info" class="loading-bar-info">${info || 'Initializing...'}</div>
+                        <div class="loading-bar-container"><div id="${id}_progress_bar" class="loading-bar" style="width: ${progress || 0}%;"></div></div>`
+            }],
+            buttons: [{
+                text: close_btn || 'Cancel',
+                backgroundColor: '#F33',
+                status: 'stop',
+                verify: () => DadoConfirm(exit),
+            }],
+            closeWarning: exit,
+            closeTrigger: c => output.close = c
+        }).finally(() => output.stopped = true)
 
+        output.update = (percent, info) => {
+            percent = percent < 0 ? 0 : percent > 100 ? 100 : percent
+            if (info) document.getElementById(`${id}_progress_info`).innerHTML = info
+            document.getElementById(`${id}_progress_bar`).style.width = `${percent}%`
+        }
+        return output
+    }
 
     /** @param { DadoPopupOptionsForm | DadoPopupOptionsInfo | DadoPopupOptionsWarn | DadoPopupOptionsAlert } options * @returns { Promise<{ status: string, data?: DadoPopup_Callback_DataObjectDirectContainer }> } */
     popup = options => new Promise(async (resolve, reject) => {
@@ -664,3 +699,4 @@ class DADOPOPUP {
 const DadoPopupClass = new DADOPOPUP()
 const DadoPopup = DadoPopupClass.popup
 const DadoConfirm = DadoPopupClass.confirm
+const DadoProgress = DadoPopupClass.progress
