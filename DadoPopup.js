@@ -87,6 +87,7 @@ SOFTWARE.
  *      allowEnterKey?: boolean,
  *      verify?: DadoPopup_OnVerify
  *      hideButtons?: boolean,
+ *      noScroll?: boolean,
  * }} DadoPopupOptionsDefault
 */
 
@@ -276,7 +277,7 @@ class DADOPOPUP {
         delete options.confirmButtonColor
         delete options.confirmButtonTextColor
         /** @type { DadoPopupOptionsForm } */
-        const parameters = { type: "form", title: `<span style="font-weight:bold !important">${title}</span><br/>${text}`, style: 'light', inputs: [], buttons, confirmButtonText: 'Yes' }
+        const parameters = { type: "form", title: `<span style="font-weight:bold !important">${title}</span><br/>${text}`, style: 'light', inputs: [], buttons, confirmButtonText: 'Yes', noScroll: true }
         Object.assign(parameters, typeof options === 'object' ? options : {})
         const result = await this.popup(parameters)
         return result.status === 'confirmed'
@@ -295,6 +296,7 @@ class DADOPOPUP {
         this.popup({
             type: 'form',
             title: title || 'Loading...',
+            noScroll: true,
             inputs: [{
                 type: 'html',
                 value: `<div id="${id}_progress_info" class="loading-bar-info">${info || 'Initializing...'}</div>
@@ -351,7 +353,7 @@ class DADOPOPUP {
             options.buttons = options.buttons && Array.isArray(options.buttons) && options.buttons.length > 0 ? options.buttons : [{ text: options.confirmButtonText, status: 'confirmed', verify: options.verify || (() => true) }]
             if (!keys.includes('backdrop')) options.backdrop = true
             if (keys.includes('labelWidth')) options.labelWidth = +options.labelWidth > 100 ? 100 : +options.labelWidth < 0 ? 0 : +options.labelWidth
-            const { buttons, style, customClass, preConfirm, allowEnterKey, backdrop, closeWarning, labelWidth, hideButtons } = options
+            const { buttons, style, customClass, preConfirm, allowEnterKey, backdrop, closeWarning, labelWidth, hideButtons, noScroll } = options
 
             const modal_id = 'x' + genString(12)
             const close_id = `${modal_id}_close`
@@ -596,7 +598,7 @@ class DADOPOPUP {
                 `       <div id="${close_id}" class="dadoPopup-close-button"></div>`,
                 `   </div>`,
                 `   ${options.title ? `<div class="dadoPopup-title no-select">${options.title}</div>` : ''}`,
-                `   <form class="dadoPopup-form" ${labelWidth ? `style="grid-template-columns: ${+labelWidth}% ${100 - labelWidth}% !important;"` : ''}>`,
+                `   <form class="dadoPopup-form ${noScroll ? 'dadoPopup-noscroll' : ''}" ${labelWidth ? `style="grid-template-columns: ${+labelWidth}% ${100 - labelWidth}% !important;"` : ''}>`,
                 `       ${inputs.map(buildInput).join('')}`,
                 `   </form>`,
                 `   <br class="no-select" />`,
