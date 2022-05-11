@@ -189,7 +189,7 @@ SOFTWARE.
 	overflow: auto;
 	overflow: overlay;
 	/* box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.2); */
-	border-radius: 10px;
+	border-radius: 5px !important;
 }
 
 .dadoPopup-form label {
@@ -576,18 +576,20 @@ SOFTWARE.
 
 /* LOADING BAR */
 .loading-bar-info {
-    
+    width: 100%;
+	margin: 0 auto;
 }
 
 .loading-bar-container {
     height: 40px;
-    width: 200px;
+    width: 100%;
     background-color: #ddd;
-    border-radius: 5px;
+    border-radius: 5px 5px 5px 5px !important;
 }
 
 .loading-bar {
-    height: 40px;
+	height: 40px;
     width: 10%;
     background-color: #00aa00;
+	border-radius: 5px 5px 5px 5px !important;
 }
