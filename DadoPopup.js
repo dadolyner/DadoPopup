@@ -262,6 +262,7 @@ class DADOPOPUP {
 
     /** @param { string | { title: string, text?: string, confirmButtonText?: string, confirmButtonColor?: string, confirmButtonTextColor?: string, style?: "dark" | "light" }} options * @returns { Promise<boolean> } */
     confirm = async options => {
+        options = Object.assign({}, options)
         options = typeof options === 'object' ? options : { title: options || '' }
         const title = options.title || 'Are you sure you want to continue?'
         const text = options.text || ''
