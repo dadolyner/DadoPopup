@@ -573,3 +573,21 @@ SOFTWARE.
 		transform: scale(1);
 	}
 }
+
+/* LOADING BAR */
+.loading-bar-info {
+    
+}
+
+.loading-bar-container {
+    height: 40px;
+    width: 200px;
+    background-color: #ddd;
+    border-radius: 5px;
+}
+
+.loading-bar {
+    height: 40px;
+    width: 10%;
+    background-color: #00aa00;
+}
