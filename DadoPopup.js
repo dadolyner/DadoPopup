@@ -281,7 +281,7 @@ class DADOPOPUP {
         const result = await this.popup(parameters)
         return result.status === 'confirmed'
     }
-    /** @param {{ title?: string; info?: string; progress?: number; close_message: any; close_btn: any; }} options */
+    /** @param {{ title?: string; info?: string; progress?: number; close_message?: string; close_btn?: string; }} options */
     progress = options => {
         const output = {
             /** @param { number } percent * @param { string } [info] */
