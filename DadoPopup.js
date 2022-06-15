@@ -137,6 +137,7 @@ class DADOPOPUP {
         this.removeDraggableDado = e => dado_draggables.includes(e) && dado_draggables.splice(dado_draggables.indexOf(e), 1);
         const load = async () => { // Initialize draggable elements
             const body = document.querySelector("body")
+            if (!body) return
             let activeElement
             let currentX
             let currentY
@@ -187,7 +188,7 @@ class DADOPOPUP {
             const reader = new FileReader()
             reader.onerror = reject
             reader.readAsDataURL(file)
-            reader.onload = () => resolve({ name: file.name, type: file.type, size: file.size, lastModified: file.lastModified, data: reader.result.toString() })
+            reader.onload = () => resolve({ name: file.name, type: file.type, size: file.size, lastModified: file.lastModified, data: (reader.result || '').toString() })
         } catch (e) { reject(e) }
     })
 
@@ -234,7 +235,7 @@ class DADOPOPUP {
         if (type === 'text' || type === 'textArea') input.fontFamily = input.fontFamily || 'Arial'
         if (type === 'color') input.value = input.value || '#FFFFFF'
         if (type === 'html') input.value = input.value || ''
-        if (type === 'textArea') input.value = this.encodeTextArea(input.value)
+        if (type === 'textArea') input.value = input.value ? this.encodeTextArea(input.value) : ''
         input.hidden = input.hidden || false
         if (type !== 'spacer') {
             if (type === 'range') input.onChange = input.onChange || (() => { })
@@ -246,7 +247,7 @@ class DADOPOPUP {
             })
         }
         if (type === 'button' && input.onClick) addCallback(id, 'click', input.onClick)
-        const margin = +input.margin
+        const margin = +(input.margin || 0) || 0
         input.margin = (margin >= 0 || margin < 0) ? margin : 3 // When margin is not set, set default value to 3px
     }
 
@@ -257,7 +258,7 @@ class DADOPOPUP {
         button.customClass = button.customClass || ''
         button.textColor = button.textColor ? `color: ${button.textColor} !important;` : ''
         button.backgroundColor = button.backgroundColor ? `background-color: ${button.backgroundColor} !important;` : ''
-        addCallback(button.id, 'click', button.onClick)
+        if (button.onClick) addCallback(button.id, 'click', button.onClick)
     }
 
 
@@ -270,7 +271,7 @@ class DADOPOPUP {
         /** @type { [DadoPopupEndorseButton] } */
         const buttons = [{ text: options.confirmButtonText || 'Yes', status: 'confirmed' }]
         if (options.confirmButtonColor) buttons[0].backgroundColor = options.confirmButtonColor
-        if (options.confirmButtonTextColor) buttons[0].textColor = options.confirmButtonTextColor
+        if (options.confirmButtonTextColor) buttons[0].textColor = options.confirmButtonTextColor // @ts-ignore
         delete options.title
         delete options.text
         delete options.confirmButtonText
@@ -316,8 +317,10 @@ class DADOPOPUP {
 
         output.update = (percent, info) => {
             percent = percent < 0 ? 0 : percent > 100 ? 100 : percent
-            if (info) document.getElementById(`${id}_progress_info`).innerHTML = info
-            document.getElementById(`${id}_progress_bar`).style.width = `${percent}%`
+            const progressInfo = document.getElementById(`${id}_progress_info`)
+            const progressBar = document.getElementById(`${id}_progress_bar`)
+            if (info && progressInfo) progressInfo.innerHTML = info
+            if (progressBar) progressBar.style.width = `${percent}%`
         }
         return output
     }
@@ -350,6 +353,7 @@ class DADOPOPUP {
             options.style = options.style || 'light'
             options.customClass = options.customClass || ''
             options.allowEnterKey = options.allowEnterKey === undefined ? true : !!options.allowEnterKey
+            options.labelWidth = options.labelWidth || 0
             /** @type { DadoPopupInputOption[] } */
             const inputs = options.inputs || []
             options.buttons = options.buttons && Array.isArray(options.buttons) && options.buttons.length > 0 ? options.buttons : [{ text: options.confirmButtonText, status: 'confirmed', verify: options.verify || (() => true) }]
@@ -376,13 +380,15 @@ class DADOPOPUP {
                         const n = element ? element.nextSibling : null
                         let next = n ? n.nextSibling : null // @ts-ignore
                         while (next && next.style.display === 'none') next = next.nextSibling.nextSibling
-                        const hasNext = !!next
-                        if (hasNext) { // @ts-ignore
+                        if (next) { // @ts-ignore
                             next.focus()
                             const type = next.nodeName.toLowerCase()
                             const targetTypes = ['input', 'textarea'] // @ts-ignore
                             if (targetTypes.includes(type)) { const val = next.value; next.value = ''; next.value = type === 'textArea' ? this.encodeTextArea(val) : val }
-                        } else document.getElementById(`${modal_id}_${buttons[0].id}`).click()
+                        } else {
+                            const btn = document.getElementById(`${modal_id}_${buttons[0].id}`)
+                            if (btn) btn.click()
+                        }
                     }
                     e.preventDefault()
                 }
@@ -396,7 +402,8 @@ class DADOPOPUP {
                 for (const input of inputs) {
                     const { type, id } = input
                     const name = type !== 'spacer' && type !== 'html' && type !== 'button' && type !== 'download' ? input.name : `spacer_${s++}`
-                    const element = document.getElementById(`${modal_id}_${id}`) // @ts-ignore
+                    const element = document.getElementById(`${modal_id}_${id}`)
+                    if (!element) continue // @ts-ignore
                     let value = type !== 'spacer' && type !== 'html' && type !== 'button' && type !== 'file' ? element.value : ''
                     if (type === 'textArea') value = this.decodeTextArea(value)
                     if (type === 'number') value = value !== '' && Number.isFinite(+value) ? Number(value) : '' //  @ts-ignore
@@ -404,11 +411,12 @@ class DADOPOPUP {
                     if (type === 'date' && value && value.includes('T')) value = value.split('T')[0]
                     if (type === 'time' && value && value.includes('T')) value = value.split('T')[1].split('Z')[0]
                     if (type === 'file') { // @ts-ignore
-                        const files_input = document.getElementById(`${modal_id}_${id}`).files
+                        const files_input = element.files
                         if (files_input && files_input.length > 0) value = await this.file_reader(files_input, true) // Just get file info
+
                     }
                     if (type === 'files') { // @ts-ignore
-                        const files_input = document.getElementById(`${modal_id}_${id}`).files
+                        const files_input = element.files
                         if (files_input && files_input.length > 0) value = await this.file_reader(files_input, true)
                         if (value && !Array.isArray(value)) value = [value]
                     }
@@ -431,19 +439,21 @@ class DADOPOPUP {
                 for (const input of inputs) {
                     const { type, id } = input
                     if (type !== 'spacer' && type !== 'html' && type !== 'button' && type !== 'download') {
-                        const { name, type } = input // @ts-ignore
-                        values[name] = document.getElementById(`${modal_id}_${id}`).value // @ts-ignore
+                        const { name, type } = input
+                        const e = document.getElementById(`${modal_id}_${id}`)
+                        if (!e) continue // @ts-ignore
+                        values[name] = e.value // @ts-ignore
                         if (type === 'textArea') values[name] = this.decodeTextArea(values[name])
-                        if (type === 'number') values[name] = values[name] !== '' ? Number(values[name]) : null // @ts-ignore
-                        if (type === 'checkbox' || type === 'toggle' || type === 'boolean') values[name] = document.getElementById(`${modal_id}_${id}`).checked // @ts-ignore
+                        if (type === 'number') values[name] = values[name] !== '' ? Number(values[name]) : undefined // @ts-ignore
+                        if (type === 'checkbox' || type === 'toggle' || type === 'boolean') values[name] = e.checked // @ts-ignore
                         if (type === 'date' && values[name] && values[name].includes('T')) values[name] = values[name].split('T')[0] // @ts-ignore
                         if (type === 'time' && values[name] && values[name].includes('T')) values[name] = values[name].split('T')[1].split('Z')[0]
                         if (type === 'file') { // @ts-ignore
-                            const files_input = document.getElementById(`${modal_id}_${id}`).files
+                            const files_input = e.files
                             if (files_input && files_input.length > 0) values[name] = await this.file_reader(files_input)
                         }
                         if (type === 'files') { // @ts-ignore
-                            const files_input = document.getElementById(`${modal_id}_${id}`).files
+                            const files_input = e.files
                             if (files_input && files_input.length > 0) values[name] = await this.file_reader(files_input) // @ts-ignore
                             if (values[name] && !Array.isArray(values[name])) values[name] = [values[name]]
                         }
@@ -457,11 +467,12 @@ class DADOPOPUP {
                     const { type } = input
                     if (type !== 'spacer' && type !== 'html' && type !== 'button' && type !== 'file' && type !== 'files' && type !== 'download') {
                         const { id, name } = input
+                        const e = document.getElementById(`${modal_id}_${id}`)
                         let value = values[name] ? values[name].value : ''
                         if (type === 'number') value = value !== '' && Number.isFinite(+value) ? Number(value) : ''
                         if (type === 'textArea') value = this.encodeTextArea(value) // @ts-ignore
-                        document.getElementById(`${modal_id}_${id}`).value = value  // @ts-ignore
-                        if (type === 'checkbox' || type === 'toggle' || type === 'boolean') document.getElementById(`${modal_id}_${id}`).checked = !!value
+                        if (e) e.value = value  // @ts-ignore
+                        if (type === 'checkbox' || type === 'toggle' || type === 'boolean') e.checked = !!value
                         if (type === 'range') {
                             const display_value = document.getElementById(`${modal_id}_${id}_value`)
                             if (display_value) display_value.textContent = value
@@ -522,7 +533,7 @@ class DADOPOPUP {
                 const max = type === 'range' ? input.max || 100 : 100
                 const step = type === 'range' ? input.step || 1 : 1
                 const isFirst = index === 0
-                const callbacks = []
+                const callbacks = [] // @ts-ignore
                 if (type === 'button' && input.onClick) callbacks.push(` onclick="DadoPopupClass.call_callback('${input_id}_click')"`)
                 else if (type === 'download' && input.file) callbacks.push(` onclick="DadoPopupClass.call_callback('${input_id}_download')"`)
                 else if (type !== 'spacer') {
@@ -611,9 +622,9 @@ class DADOPOPUP {
             await delay(10)
             modalContainer.classList.add('shown')
             const modal = document.getElementById(modal_id)
+            if (!modal) return
             const header = modal.querySelector('.dadoPopup-header-bar')
             await delay(50)
-            if (!modal) return
             switch (options.size) {
                 case 'small': modal.classList.add('small'); break
                 case 'medium': modal.classList.add('medium'); break
@@ -682,8 +693,8 @@ class DADOPOPUP {
                 const button_element = document.getElementById(`${modal_id}_${id}`)
                 if (button_element) button_element.addEventListener('click', confirmations[id])
             }
-            topCloseButton.addEventListener('click', on_close)
-            header.addEventListener('dblclick', on_maximize)
+            if (topCloseButton) topCloseButton.addEventListener('click', on_close)
+            if (header) header.addEventListener('dblclick', on_maximize)
 
             const remove_all_references = () => {
                 this.release_callbacks(modal_id)
@@ -692,8 +703,8 @@ class DADOPOPUP {
                     const button_element = document.getElementById(`${modal_id}_${id}`)
                     if (button_element) button_element.removeEventListener('click', confirmations[id])
                 }
-                topCloseButton.removeEventListener('click', on_close)
-                header.removeEventListener('dblclick', on_maximize)
+                if (topCloseButton) topCloseButton.removeEventListener('click', on_close)
+                if (header) header.removeEventListener('dblclick', on_maximize)
                 modalContainer.remove()
             }
         } catch (e) { reject(e) }
